@@ -6,20 +6,29 @@
     <title>KT3M SYSTEM - Nội Thất Nguyễn Minh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .kt3m-logo-area { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 14px; }
+        .kt3m-logo-icon { width: 40px; height: 40px; background-image: url('{{ url_for("static", filename="logo.png") }}'); background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 8px; }
+        .kt3m-logo-text { color: #10b981; font-weight: 900; font-size: 20px; letter-spacing: 0.05em; line-height: 1; }
+        .kt3m-logo-sub { color: #64748b; font-size: 9px; font-weight: 700; text-transform: uppercase; margin-top: 3px; tracking-width: 0.1em; }
+    </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
 
     {% if page == 'login' %}
     <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-slate-900 w-full max-w-sm p-6 rounded-3xl border border-slate-800 shadow-2xl space-y-4">
-            <div class="text-center">
-                <h1 class="text-3xl font-black tracking-wider text-emerald-400">KT3M SYSTEM</h1>
-                <p class="text-xs text-slate-400 font-bold uppercase mt-1">XƯỞNG NỘI THẤT NGUYỄN MINH</p>
+        <div class="bg-slate-900 w-full max-w-sm p-6 rounded-3xl border border-slate-800 shadow-2xl space-y-5">
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-4 justify-center">
+                <div class="kt3m-logo-icon"></div>
+                <div>
+                    <h1 class="kt3m-logo-text">KT3M SYSTEM</h1>
+                    <p class="kt3m-logo-sub">NỘI THẤT NGUYỄN MINH</p>
+                </div>
             </div>
             <div class="space-y-3 pt-2">
                 <input id="login-username" type="text" placeholder="Tên đăng nhập" class="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm font-bold text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600">
                 <input id="login-password" type="password" placeholder="Mật khẩu bảo mật" class="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm font-bold text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600">
-                <button onclick="xuLyDangNhap()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm rounded-2xl shadow-lg transition-all">ĐĂNG NHẬP</button>
+                <button onclick="xuLyDangNhap()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/10 transition-all">ĐĂNG NHẬP HỆ THỐNG</button>
             </div>
         </div>
     </div>
@@ -37,20 +46,28 @@
     <div class="flex flex-col md:flex-row min-h-screen relative">
         
         <div class="md:hidden bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-50">
-            <div>
-                <h1 class="text-base font-black text-emerald-400">KT3M SYSTEM</h1>
-                <p class="text-[9px] text-slate-500 font-bold uppercase">Nội Thất Nguyễn Minh</p>
+            <div class="flex items-center gap-2">
+                <div class="kt3m-logo-icon w-8 h-8"></div>
+                <div>
+                    <h1 class="text-sm font-black text-emerald-400">KT3M SYSTEM</h1>
+                    <p class="text-[8px] text-slate-500 font-bold uppercase">Nội Thất Nguyễn Minh</p>
+                </div>
             </div>
-            <button onclick="batTatSidebar()" class="w-10 h-10 bg-slate-950 border border-slate-800 text-slate-200 rounded-xl flex items-center justify-center text-lg active:scale-95 transition-all">
+            <button onclick="batTatSidebar()" class="w-9 h-9 bg-slate-950 border border-slate-800 text-slate-200 rounded-xl flex items-center justify-center text-base">
                 <i id="icon-menu" class="fa-solid fa-bars"></i>
             </button>
         </div>
         
-        <aside id="sidebar-menu" class="hidden md:flex w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex-col justify-between fixed md:sticky top-[61px] md:top-0 left-0 h-[calc(100vh-61px)] md:h-screen z-40 transition-all duration-300 overflow-y-auto">
+        <aside id="sidebar-menu" class="hidden md:flex w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex-col justify-between fixed md:sticky top-[57px] md:top-0 left-0 h-[calc(100vh-57px)] md:h-screen z-40 overflow-y-auto">
             <div class="p-5 space-y-5">
                 <div class="hidden md:block">
-                    <h1 class="text-xl font-black text-emerald-400 tracking-wider">KT3M SYSTEM</h1>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase">Nội Thất Nguyễn Minh</p>
+                    <div class="kt3m-logo-area">
+                        <div class="kt3m-logo-icon"></div>
+                        <div>
+                            <h1 class="kt3m-logo-text">KT3M SYSTEM</h1>
+                            <p class="kt3m-logo-sub">NỘI THẤT NGUYỄN MINH</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs">
@@ -64,16 +81,16 @@
 
                 {% if user.role == 'ADMIN' %}
                 <div class="flex flex-col gap-1.5">
-                    <button onclick="chuyenTabTab('tab-cham-cong')" class="menu-item-btn w-full py-3 px-4 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl flex items-center gap-3 transition-all">
+                    <button onclick="chuyenTabTab('tab-cham-cong')" class="menu-item-btn w-full py-3 px-4 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl flex items-center gap-3">
                         <i class="fa-solid fa-calendar-days text-sm w-5"></i> 1. Quản Lý Chấm Công
                     </button>
-                    <button onclick="chuyenTabTab('tab-cong-trinh')" class="menu-item-btn w-full py-3 px-4 text-slate-400 hover:bg-slate-800/60 font-bold text-xs rounded-xl flex items-center gap-3 transition-all">
+                    <button onclick="chuyenTabTab('tab-cong-trinh')" class="menu-item-btn w-full py-3 px-4 text-slate-400 hover:bg-slate-800/60 font-bold text-xs rounded-xl flex items-center gap-3">
                         <i class="fa-solid fa-hammer text-sm w-5"></i> 2. Hạch Toán Công Trình
                     </button>
-                    <button onclick="chuyenTabTab('tab-vat-tu')" class="menu-item-btn w-full py-3 px-4 text-slate-400 hover:bg-slate-800/60 font-bold text-xs rounded-xl flex items-center gap-3 transition-all">
+                    <button onclick="chuyenTabTab('tab-vat-tu')" class="menu-item-btn w-full py-3 px-4 text-slate-400 hover:bg-slate-800/60 font-bold text-xs rounded-xl flex items-center gap-3">
                         <i class="fa-solid fa-boxes-stacked text-sm w-5"></i> 3. Kho Vật Tư Sỉ
                     </button>
-                    <button onclick="chuyenTabTab('tab-cap-tai-khoan')" class="menu-item-btn w-full py-3 px-4 text-slate-400 hover:bg-slate-800/60 font-bold text-xs rounded-xl flex items-center gap-3 transition-all">
+                    <button onclick="chuyenTabTab('tab-cap-tai-khoan')" class="menu-item-btn w-full py-3 px-4 text-slate-400 hover:bg-slate-800/60 font-bold text-xs rounded-xl flex items-center gap-3">
                         <i class="fa-solid fa-user-lock text-sm w-5"></i> 4. Cấp Tài Khoản Thợ
                     </button>
                 </div>
@@ -81,19 +98,19 @@
             </div>
 
             <div class="p-4 border-t border-slate-800 bg-slate-900/50">
-                <a href="/logout" class="w-full py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-bold text-xs text-slate-400 flex items-center justify-center gap-2 transition-all hover:bg-red-950/40 hover:text-red-400">
+                <a href="/logout" class="w-full py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-bold text-xs text-slate-400 flex items-center justify-center gap-2 hover:bg-red-950/40 hover:text-red-400 transition-all">
                     <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất hệ thống
                 </a>
             </div>
         </aside>
 
-        <main class="flex-1 p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-4">
+        <main class="flex-1 p-4 md:p-6 lg:p-8 max-w-4xl mx-auto w-full space-y-4">
             
             <section id="tab-cham-cong" class="tab-content block space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl gap-3">
                     <div>
                         <h2 class="font-black text-slate-200 text-base tracking-wide">Hồ Sơ Thợ & Lịch Công Đổ Màu</h2>
-                        <p class="text-[11px] text-slate-500">Click ngày trên lịch nhỏ để điều chỉnh thông số</p>
+                        <p class="text-[11px] text-slate-500">Bấm ngày trên lịch nhỏ của thợ để sửa công nhầm hoặc xóa công</p>
                     </div>
                     {% if user.role == 'ADMIN' %}
                     <div class="flex gap-2 w-full sm:w-auto">
@@ -108,16 +125,16 @@
             <section id="tab-cong-trinh" class="tab-content hidden space-y-4">
                 <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl">
                     <div>
-                        <h2 class="font-black text-slate-200 text-base tracking-wide">Hạch Toán Công Trình</h2>
+                        <h2 class="font-black text-slate-200 text-base">Hạch Toán Công Trình</h2>
                     </div>
                     <button onclick="moModalThemCongTrinh()" class="py-2 px-3 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md"><i class="fa-solid fa-folder-plus"></i> Thêm Dự Án</button>
                 </div>
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs font-semibold text-slate-300 min-w-[650px]">
                         <thead>
-                            <tr class="bg-slate-950 text-slate-400 font-bold uppercase">
+                            <tr class="bg-slate-950 text-slate-400 uppercase">
                                 <th class="p-3">Tên Công Trình</th>
-                                <th class="p-3">Đơn Giá</th>
+                                <th class="p-3">Đơn Giá Nhận</th>
                                 <th class="p-3 text-amber-500">Vật Tư</th>
                                 <th class="p-3 text-blue-400">Nhân Công</th>
                                 <th class="p-3 text-emerald-400 bg-slate-950/80">Lợi Nhuận</th>
@@ -132,7 +149,7 @@
 
             <section id="tab-vat-tu" class="tab-content hidden space-y-4">
                 <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl">
-                    <h2 class="font-black text-slate-200 text-base tracking-wide">Kho Phôi Vật Tư Sản Xuất</h2>
+                    <h2 class="font-black text-slate-200 text-base">Kho Phôi Vật Tư Sản Xuất</h2>
                     <button onclick="moModal('modal-them-vat-tu')" class="py-2 px-3 bg-amber-500 text-slate-950 font-black text-xs rounded-xl"><i class="fa-solid fa-box-open"></i> Nhập Kho</button>
                 </div>
                 <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3" id="danh-sach-vat-tu-cards"></div>
@@ -140,12 +157,12 @@
 
             <section id="tab-cap-tai-khoan" class="tab-content hidden max-w-md mx-auto">
                 <div class="bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-2xl space-y-4">
-                    <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2"><i class="fa-solid fa-user-lock text-emerald-400"></i> Kích Hoạt Tài Khoản</h3>
+                    <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2"><i class="fa-solid fa-user-lock text-emerald-400"></i> Kích Hoạt Tài Khoản Thợ</h3>
                     <div class="space-y-3 text-xs font-bold text-slate-400">
-                        <select id="tk-nhan-vien-id" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 font-bold focus:outline-none"></select>
+                        <select id="tk-nhan-vien-id" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none"></select>
                         <input id="tk-username" type="text" placeholder="Tên đăng nhập thợ" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                         <input id="tk-password" type="password" placeholder="Mật khẩu" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
-                        <button onclick="xuLyCapTaiKhoanTho()" class="w-full py-3 bg-blue-600 text-white font-black text-sm rounded-xl">KÍCH HOẠT QUYỀN</button>
+                        <button onclick="xuLyCapTaiKhoanTho()" class="w-full py-3 bg-blue-600 text-white font-black text-sm rounded-xl">KÍCH HOẠT TÀI KHOẢN</button>
                     </div>
                 </div>
             </section>
@@ -154,12 +171,12 @@
 
     <div id="modal-ung-luong" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
         <div class="bg-slate-900 w-full max-w-sm rounded-3xl p-5 border border-slate-800 shadow-2xl relative">
-            <button onclick="dongModal('modal-ung-luong')" class="absolute top-4 right-4 text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="dongModal('modal-ung-luong')" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2">Duyệt Chi Ứng Lương</h3>
             <div class="space-y-3 pt-3 text-xs font-bold text-slate-400">
-                <p>Thợ ứng: <span id="ung-label-ten" class="text-white font-black"></span></p>
+                <p>Thợ ứng tiền: <span id="ung-label-ten" class="text-white font-black"></span></p>
                 <input id="ung-so-tien" type="number" placeholder="Nhập tiền ứng (VND)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-red-400 font-black">
-                <button onclick="xacNhanUngLuong()" class="w-full py-3 bg-red-600 text-white font-black rounded-xl">DUYỆT CHI</button>
+                <button onclick="xacNhanUngLuong()" class="w-full py-3 bg-red-600 text-white font-black rounded-xl">DUYỆT CHI TIỀN</button>
             </div>
         </div>
     </div>
@@ -167,14 +184,14 @@
     <div id="modal-luu-cham-cong" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
         <div class="bg-slate-900 w-full max-w-sm rounded-3xl p-5 border border-slate-800 shadow-2xl relative">
             <button onclick="dongModal('modal-luu-cham-cong')" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2">Ghi Nhận Chấm Công</h3>
+            <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2">Ghi Nhận Chấm Công Hệ Thống</h3>
             <div class="space-y-3 pt-3 text-xs font-bold text-slate-400">
                 <p>Thợ: <span id="cc-label-ten" class="font-black text-white"></span></p>
                 <input id="cc-input-ngay" type="date" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl font-bold text-slate-200">
                 <select id="cc-select-heso" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl font-bold text-slate-200">
-                    <option value="1.0">CHẤM 1 NGÀY CÔNG</option>
-                    <option value="0.5">CHẤM 1/2 NGÀY CÔNG</option>
-                    <option value="0.0">XÓA CÔNG NGÀY NÀY</option>
+                    <option value="1.0">CHẤM 1 NGÀY CÔNG (Đầy công)</option>
+                    <option value="0.5">CHẤM 1/2 NGÀY CÔNG (Nửa công)</option>
+                    <option value="0.0">XÓA CÔNG NGÀY NÀY (Về 0 công)</option>
                 </select>
                 <select id="cc-select-cong-trinh" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl font-bold text-slate-200"></select>
                 <button onclick="xacNhanGuiDuLieuChamCong()" class="w-full py-3 bg-emerald-500 text-slate-950 font-black rounded-xl">LƯU CẬP NHẬT</button>
@@ -193,9 +210,9 @@
                     <input id="nv-luong" type="number" placeholder="Lương/ngày (VND)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-blue-400 font-bold">
                     <input id="nv-ngaychot" type="number" placeholder="Ngày chốt (VD: 30)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-red-400 font-bold">
                 </div>
-                <input id="nv-doanhso" type="number" placeholder="Doanh số thưởng" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-purple-400 font-bold">
-                <textarea id="nv-ghichu" placeholder="Ghi chú..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 h-16"></textarea>
-                <button onclick="xuLyThemNhanVien()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl">LƯU HỒ SƠ</button>
+                <input id="nv-doanhso" type="number" placeholder="Doanh số thưởng tháng này" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-purple-400 font-bold">
+                <textarea id="nv-ghichu" placeholder="Ghi chú thêm..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 h-16"></textarea>
+                <button onclick="xuLyThemNhanVien()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl">LƯU HỒ SƠ THỢ</button>
             </div>
         </div>
     </div>
@@ -206,12 +223,12 @@
             <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2">Khởi Tạo Công Trình</h3>
             <div class="space-y-3 pt-3 text-xs font-bold text-slate-400">
                 <input id="ct-ten" type="text" placeholder="Tên công trình" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 font-bold">
-                <input id="ct-dongia" type="number" placeholder="Đơn giá nhận (VND)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 font-bold">
+                <input id="ct-dongia" type="number" placeholder="Đơn giá nhận hợp đồng (VND)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 font-bold">
                 <div class="border border-slate-800 rounded-2xl p-3 bg-slate-950 space-y-2">
                     <label class="block text-slate-500 font-bold">Khấu Trừ Kho Vật Tư:</label>
                     <div id="danh-sach-vat-tu-tich-chon" class="space-y-2 max-h-40 overflow-y-auto"></div>
                 </div>
-                <button onclick="xuLyThemCongTrinh()" class="w-full py-3 bg-emerald-500 text-slate-950 font-black rounded-xl">KHỞI TẠO</button>
+                <button onclick="xuLyThemCongTrinh()" class="w-full py-3 bg-emerald-500 text-slate-950 font-black rounded-xl">KHỞI TẠO DỰ ÁN</button>
             </div>
         </div>
     </div>
@@ -221,10 +238,10 @@
             <button onclick="dongModal('modal-them-vat-tu')" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             <h3 class="font-black text-slate-200 text-base border-b border-slate-800 pb-2">Khai Báo Vật Tư</h3>
             <div class="space-y-3 pt-3 text-xs font-bold text-slate-400">
-                <input id="vt-ten" type="text" placeholder="Tên vật tư" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                <input id="vt-ten" type="text" placeholder="Tên loại vật tư" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                 <div class="grid grid-cols-2 gap-2">
                     <input id="vt-gia" type="number" placeholder="Giá nhập sỉ" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
-                    <input id="vt-soluong" type="number" placeholder="Số lượng" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                    <input id="vt-soluong" type="number" placeholder="Số lượng nhập kho" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                 </div>
                 <button onclick="xuLyThemVatTu()" class="w-full py-3 bg-amber-500 text-slate-950 font-black rounded-xl">CẬP NHẬT KHO</button>
             </div>
@@ -233,47 +250,25 @@
 
     <script>
         const USER_ROLE = "{{ user.role }}";
-        let listCongTrinhToanCuc = [];
-        let listVatTuToanCuc = [];
-        let ccTamNhanVienId = null;
+        let listCongTrinhToanCuc = []; let listVatTuToanCuc = []; let ccTamNhanVienId = null; let ungTamNhanVienId = null;
 
-        // Hàm ẩn hiện Menu 3 gạch linh hoạt trên di động
+        // Xử lý nút 3 gạch mở menu di động mượt mà
         function batTatSidebar() {
-            let sb = document.getElementById('sidebar-menu');
-            let icon = document.getElementById('icon-menu');
-            if(sb.classList.contains('hidden')) {
-                sb.classList.remove('hidden');
-                sb.classList.add('flex');
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-xmark'); // Biến thành dấu X khi mở
-            } else {
-                sb.classList.add('hidden');
-                sb.classList.remove('flex');
-                icon.classList.remove('fa-xmark');
-                icon.classList.add('fa-bars'); // Trở lại 3 gạch khi đóng
-            }
+            let sb = document.getElementById('sidebar-menu'); let icon = document.getElementById('icon-menu');
+            if(sb.classList.contains('hidden')) { sb.classList.remove('hidden'); sb.classList.add('flex'); icon.classList.remove('fa-bars'); icon.classList.add('fa-xmark'); } 
+            else { sb.classList.add('hidden'); sb.classList.remove('flex'); icon.classList.remove('fa-xmark'); icon.classList.add('fa-bars'); }
         }
-
-        function chuyenTabTab(id) {
-            chuyenTab(id);
-            // Tự động đóng menu vuốt sau khi thợ/sếp chọn tab trên di động
-            if(window.innerWidth < 768) { batTatSidebar(); }
-        }
-
+        function chuyenTabTab(id) { chuyenTab(id); if(window.innerWidth < 768) { batTatSidebar(); } }
         function moModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function dongModal(id) { document.getElementById(id).classList.add('hidden'); }
-
+        
         function chuyenTab(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            document.querySelectorAll('.menu-item-btn').forEach(btn => {
-                btn.classList.remove('bg-emerald-500', 'text-slate-950', 'font-black', 'shadow-md');
-                btn.classList.add('text-slate-400', 'hover:bg-slate-800/60', 'font-bold');
-            });
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.menu-item-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950', 'font-black', 'shadow-md'); btn.classList.add('text-slate-400', 'hover:bg-slate-800/60', 'font-bold'); });
             event.currentTarget.classList.add('bg-emerald-500', 'text-slate-950', 'font-black', 'shadow-md');
-            event.currentTarget.classList.remove('text-slate-400', 'hover:bg-slate-800/60', 'font-bold');
         }
 
+        // Tạo ma trận lịch ô vuông nhỏ đổ màu + hiện số tiền viết tắt K
         const AuroraRenderCalendar = (thoId, luongCoBan, lichSuCong) => {
             let bayGio = new Date(); let nam = bayGio.getFullYear(); let thang = bayGio.getMonth();
             let soNgayTrongThang = new Date(nam, thang + 1, 0).getDate();
@@ -290,11 +285,12 @@
             return lichHtml;
         }
 
+        // Tải danh sách thợ dạng thẻ cuộn dọc + Tiền ứng thực trả
         async function loadDanhSachTho() {
             let res = await fetch('/api/admin/danh-sach-thong-ke'); let data = await res.json();
             let container = document.getElementById('danh-sach-tho-container'); container.innerHTML = '';
             data.forEach(tho => {
-                let tongTienNhan = (tho.luong_tich_luy + tho.doanh_so) - tho.tien_ung;
+                let tongTienNhan = (tho.luong_tich_luy + tho.doomed_sales || tho.doanh_so) - tho.tien_ung;
                 let oLichThangHtml = AuroraRenderCalendar(tho.id, tho.luong_co_ban, tho.lich_su);
                 container.innerHTML += `
                     <div class="bg-slate-900 rounded-3xl p-4 border border-slate-800 shadow-xl space-y-3 w-full block relative">
@@ -304,17 +300,22 @@
                             <span class="bg-emerald-500/10 text-emerald-400 text-xs font-black px-2 py-0.5 rounded-lg border border-emerald-500/20 mr-16">${tho.luong_co_ban.toLocaleString()}đ</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-400 bg-slate-950 p-2.5 rounded-xl border border-slate-800/40">
-                            <div>Công tích lũy: <span class="text-slate-200 font-black">${tho.tong_cong} công</span></div><div>Chốt lương: Ngày ${tho.ngay_chot_luong}</div>
+                            <div>Công tháng này: <span class="text-slate-200 font-black">${tho.tong_cong} công</span></div><div>Chốt lương: Ngày ${tho.ngay_chot_luong}</div>
                             <div>Doanh số thưởng: ${tho.doanh_so.toLocaleString()}đ</div><div>Đã ứng trước: ${tho.tien_ung.toLocaleString()}đ</div>
                             <div class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 p-2 rounded-xl text-center col-span-2 font-black text-xs mt-1">THỰC TRẢ THÁNG NÀY: <span class="font-black text-red-400 text-sm pl-1">${tongTienNhan.toLocaleString()}đ</span></div>
                         </div>
                         <div class="space-y-1"><p class="text-[10px] font-black text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-grid"></i> Sơ đồ công lịch tháng:</p><div class="grid grid-cols-7 gap-1 bg-slate-950 p-1.5 rounded-xl border border-slate-800/80">${oLichThangHtml}</div></div>
-                        ${USER_ROLE === 'ADMIN' ? `<div class="grid grid-cols-2 gap-2 pt-0.5"><button onclick="kichHoatTrangChamCongNhanh(${tho.id}, '${tho.fullname}')" class="py-1.5 bg-slate-950 border border-slate-800 text-slate-200 font-black text-xs rounded-xl shadow-sm"><i class="fa-solid fa-calendar-plus text-emerald-400"></i> CHẤM & SỬA</button><button onclick="kichHoatTrangUng(${tho.id}, '${tho.fullname}')" class="py-1.5 bg-slate-950 border border-slate-800 text-slate-400 font-black text-xs rounded-xl shadow-sm"><i class="fa-solid fa-dollar-sign text-red-500"></i> DUYỆT ỨNG</button></div>` : ''}
+                        ${USER_ROLE === 'ADMIN' ? `
+                        <div class="grid grid-cols-2 gap-2 pt-0.5">
+                            <button onclick="kichHoatTrangChamCongNhanh(${tho.id}, '${tho.fullname}')" class="py-1.5 bg-slate-950 border border-slate-800 text-slate-200 font-black text-xs rounded-xl shadow-sm"><i class="fa-solid fa-calendar-plus text-emerald-400"></i> CHẤM NHANH</button>
+                            <button onclick="kichHoatTrangUng(${tho.id}, '${tho.fullname}')" class="py-1.5 bg-slate-950 border border-slate-800 text-slate-400 font-black text-xs rounded-xl shadow-sm"><i class="fa-solid fa-dollar-sign text-red-500"></i> DUYỆT ỨNG</button>
+                        </div>
+                        ` : ''}
                     </div>`;
             });
         }
 
-        async function xuLyXoaTho(id, ten) { if(!confirm(`Xóa hồ sơ thợ [${ten}]?`)) return; await fetch(`/api/admin/xoa-nhan-vien/${id}`, { method: 'DELETE' }); loadHệThống(); }
+        async function xuLyXoaTho(id, ten) { if(!confirm(`Sếp chắc chắn muốn xóa thợ [${ten}]?`)) return; await fetch(`/api/admin/xoa-nhan-vien/${id}`, { method: 'DELETE' }); loadHệThống(); }
         function kichHoatTrangSuaCongTrucTiep(id, chuoiNgay, heSoHienTai) { ccTamNhanVienId = id; document.getElementById('cc-label-ten').innerText = "Sửa công thợ trên lịch"; document.getElementById('cc-input-ngay').value = chuoiNgay; document.getElementById('cc-select-heso').value = heSoHienTai !== null ? heSoHienTai.toFixed(1) : "1.0"; napDuLieuCongTrinh(); moModal('modal-luu-cham-cong'); }
         function kichHoatTrangChamCongNhanh(id, ten) { ccTamNhanVienId = id; document.getElementById('cc-label-ten').innerText = ten; let homNay = new Date().toISOString().split('T')[0]; document.getElementById('cc-input-ngay').value = homNay; document.getElementById('cc-select-heso').value = "1.0"; napDuLieuCongTrinh(); moModal('modal-luu-cham-cong'); }
         function napDuLieuCongTrinh() { let select = document.getElementById('cc-select-cong-trinh'); select.innerHTML = '<option value="">-- Việc xưởng chung --</option>'; listCongTrinhToanCuc.forEach(ct => { select.innerHTML += `<option value="${ct.id}">${ct.ten_ct}</option>`; }); }
@@ -342,7 +343,7 @@
                         <td class="p-3 font-bold text-white">${ct.ten_ct}</td><td class="p-3">${ct.don_gia.toLocaleString()}đ</td>
                         <td class="p-3 text-amber-500 font-bold">${ct.chi_phi_vat_tu.toLocaleString()}đ</td><td class="p-3 text-blue-400 font-bold">${ct.chi_phi_nhan_cong.toLocaleString()}đ</td>
                         <td class="p-3 text-emerald-400 font-black bg-slate-950/40">${ct.loi_nhuan.toLocaleString()}đ</td>
-                        <td class="p-3 text-center"><a href="/api/admin/phieu-xuat-kho/${ct.id}" target="_blank" class="px-2 py-1 bg-slate-950 text-emerald-400 rounded text-[10px] border border-slate-800">IN</a></td>
+                        <td class="p-3 text-center"><a href="/api/admin/phieu-xuat-kho/${ct.id}" target="_blank" class="px-2 py-1 bg-slate-950 text-emerald-400 rounded text-[10px] border border-slate-800 font-bold">IN PHIẾU</a></td>
                         <td class="p-3 text-center"><button onclick="xoaCongTrinh(${ct.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
             });
@@ -353,8 +354,8 @@
             listVatTuToanCuc.forEach(vt => {
                 container.innerHTML += `
                     <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800 text-[11px]">
-                        <label class="text-slate-300"><input type="checkbox" value="${vt.id}" class="vt-checkbox"> <b class="text-white">${vt.ten_vt}</b></label>
-                        <input type="number" placeholder="SL" class="vt-sl-dung w-12 bg-slate-900 border border-slate-800 text-center text-white">
+                        <label class="text-slate-300"><input type="checkbox" value="${vt.id}" class="vt-checkbox"> <b class="text-white">${vt.ten_vt}</b> (Còn: ${vt.so_luong})</label>
+                        <input type="number" placeholder="SL" class="vt-sl-dung w-12 bg-slate-900 border border-slate-800 text-center text-white font-bold">
                     </div>`;
             });
             moModal('modal-them-cong-trinh');
@@ -375,7 +376,7 @@
             listVatTuToanCuc.forEach(vt => {
                 container.innerHTML += `
                     <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl flex justify-between items-center">
-                        <div><h4 class="font-bold text-white text-sm">${vt.ten_vt}</h4><p class="text-xs text-slate-500">Giá: ${vt.gia_nhap.toLocaleString()}đ</p></div>
+                        <div><h4 class="font-bold text-white text-sm">${vt.ten_vt}</h4><p class="text-xs text-slate-500">Giá nhập sỉ: ${vt.gia_nhap.toLocaleString()}đ</p></div>
                         <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 font-black text-xs px-2.5 py-1 rounded-xl">TỒN: ${vt.so_luong}</span>
                     </div>`;
             });
@@ -393,13 +394,13 @@
             let d = await res.json(); alert(d.message); if(d.status === 'success') { dongModal('modal-them-vat-tu'); loadHệThống(); }
         }
 
-        async function xoaCongTrinh(id) { if(confirm("Xóa dự án?")) { await fetch(`/api/admin/xoa-cong-trinh/${id}`, { method: 'DELETE' }); loadHệThống(); } }
-        async function xuLyResetThang() { if(confirm("Xác nhận chốt sổ chu kỳ tháng?")) { await fetch('/api/admin/reset-thang', { method: 'POST' }); loadHệThống(); } }
+        async function xoaCongTrinh(id) { if(confirm("Xóa dự án và hoàn vật tư về kho sỉ?")) { await fetch(`/api/admin/xoa-cong-trinh/${id}`, { method: 'DELETE' }); loadHệThống(); } }
+        async function xuLyResetThang() { if(confirm("Xác nhận kết thúc tháng? Toàn bộ ngày công và tiền ứng thợ sẽ reset về 0!")) { await fetch('/api/admin/reset-thang', { method: 'POST' }); loadHệThống(); } }
 
         async function loadSelectNhanVienChuaCoTk() {
             if(USER_ROLE !== 'ADMIN') return;
-            let res = await fetch('/api/admin/danh-sach-vien-chua-co-tk'); if(!res.ok) res = await fetch('/api/admin/danh-sach-nhan-vien-chua-co-tk');
-            let data = await res.json(); let select = document.getElementById('tk-nhan-vien-id'); select.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+            let res = await fetch('/api/admin/danh-sach-nhan-vien-chua-co-tk'); let data = await res.json();
+            let select = document.getElementById('tk-nhan-vien-id'); select.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
             data.forEach(nv => { select.innerHTML += `<option value="${nv.id}">${nv.fullname}</option>`; });
         }
 
