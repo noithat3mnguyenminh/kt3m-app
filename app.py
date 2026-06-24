@@ -16,9 +16,16 @@ def call_gs(action, table, **kwargs):
 
 @app.route('/')
 def index():
-    if 'username' not in session: return render_template('index.html', page='login')
+    # Nếu chưa đăng nhập thì bắt vào login
+    if 'username' not in session: 
+        return render_template('index.html', page='login')
+    
+    # Kiểm tra quyền nếu là admin thì mới cho vào trang quản lý
+    if session.get('role') == 'admin':
+        return render_template('index.html', page='admin_main', user=session)
+    
+    # Nếu là thợ thì vào trang thợ
     return render_template('index.html', page='main', user=session)
-
 @app.route('/api/login', methods=['POST'])
 def api_login():
     data = request.json
