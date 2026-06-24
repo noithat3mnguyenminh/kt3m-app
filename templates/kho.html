@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT3M - Tổng Kho Vật Tư</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-50 font-sans pb-24">
+
+    <header class="bg-slate-900 text-white px-4 py-4 sticky top-0 z-40 shadow-md">
+        <div class="flex justify-between items-center max-w-4xl mx-auto">
+            <div>
+                <h1 class="text-xl font-black tracking-wider text-blue-400">TỔNG KHO VẬT TƯ</h1>
+                <p class="text-xs text-slate-400">Quản trị danh mục hàng hóa sản xuất</p>
+            </div>
+            <a href="/" class="text-sm bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl"><i class="fa-solid fa-home"></i></a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="grid grid-cols-3 gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+            <a href="/" class="py-3 text-slate-600 text-center font-bold text-xs rounded-xl">⚙️ Tổng Quan</a>
+            <a href="/cong-viec" class="py-3 text-slate-600 text-center font-bold text-xs rounded-xl">🛠️ Công Việc</a>
+            <a href="/kho" class="py-3 bg-blue-500 text-white text-center font-bold text-xs rounded-xl shadow-sm">📦 Kho Vật Tư</a>
+        </div>
+
+        <button onclick="document.getElementById('modal-them-sp').classList.remove('hidden')" class="w-full py-3.5 bg-blue-600 text-white font-black text-sm rounded-2xl shadow-sm">
+            + KHAI BÁO VẬT TƯ / SẢN PHẨM MỚI
+        </button>
+
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-900 text-white font-black text-sm">📦 Danh Sách Vật Tư Trong Kho</div>
+            <div class="divide-y divide-slate-100" id="list-vat-tu"></div>
+        </div>
+    </main>
+
+    <div id="modal-them-sp" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-them-sp').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-slate-800">Nạp Sản Phẩm Vào Kho</h3>
+            <div class="space-y-3 pt-2">
+                <input id="vt-ma" type="text" placeholder="Mã hàng (VD: GO_MDF_17)" class="w-full p-3 bg-slate-50 rounded-xl border text-sm font-bold">
+                <input id="vt-ten" type="text" placeholder="Tên sản phẩm" class="w-full p-3 bg-slate-50 rounded-xl border text-sm font-semibold">
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="vt-dvt" type="text" placeholder="ĐVT (Tấm/Cái)" class="w-full p-3 bg-slate-50 rounded-xl border text-sm">
+                    <input id="vt-sl" type="number" placeholder="Số lượng tồn kho" class="w-full p-3 bg-slate-50 rounded-xl border text-sm">
+                </div>
+                <input id="vt-gia-nhap" type="number" placeholder="Giá vốn nhập gốc" class="w-full p-3 bg-slate-50 rounded-xl border text-sm font-black text-blue-600">
+                <input id="vt-barcode" type="text" placeholder="Mã vạch Barcode (Nếu có)" class="w-full p-3 bg-slate-50 rounded-xl border text-sm">
+                <button onclick="saveSanPhamKho()" class="w-full py-3.5 bg-blue-600 text-white font-black rounded-xl text-sm">LƯU VÀO DANH MỤC KHO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadKhoVatTu() {
+            let res = await fetch('/api/kho/danh-sach');
+            let data = await res.json();
+            let container = document.getElementById('list-vat-tu');
+            container.innerHTML = '';
+            data.forEach(vt => {
+                container.innerHTML += `
+                    <div class="p-4 flex justify-between items-center bg-white">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">${vt.ten_vt}</h4>
+                            <p class="text-xs text-slate-400">Giá nhập vốn: <span class="text-blue-600 font-bold">${Number(vt.don_gia_nhap).toLocaleString()} đ</span> / ${vt.dvt}</p>
+                        </div>
+                        <div class="text-right font-black text-slate-800">${vt.sl_ton} <span class="text-xs text-slate-400">${vt.dvt}</span></div>
+                    </div>`;
+            });
+        }
+
+        async function saveSanPhamKho() {
+            let ma = document.getElementById('vt-ma').value;
+            let ten = document.getElementById('vt-ten').value;
+            let dvt = document.getElementById('vt-dvt').value;
+            let sl = document.getElementById('vt-sl').value;
+            let gia = document.getElementById('vt-gia-nhap').value;
+            let bar = document.getElementById('vt-barcode').value;
+
+            let res = await fetch('/api/admin/kho/them-san-pham', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ma_vt: ma, ten_vt: ten, dvt: dvt, sl_ton: sl, don_gia_nhap: gia, ma_barcode: bar })
+            });
+            let result = await res.json();
+            alert(result.message);
+            if(result.status === 'success') {
+                document.getElementById('modal-them-sp').classList.add('hidden');
+                loadKhoVatTu();
+            }
+        }
+        window.onload = loadKhoVatTu;
+    </script>
+</body>
+</html>

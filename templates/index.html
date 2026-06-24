@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT3M - Hệ Thống Quản Trị Xưởng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-50 font-sans min-h-screen pb-24">
+
+    <header class="bg-slate-900 text-white px-4 py-4 sticky top-0 z-40 shadow-md">
+        <div class="flex justify-between items-center max-w-4xl mx-auto">
+            <div>
+                <h1 class="text-xl font-black tracking-wider text-emerald-400">KT3M SYSTEM</h1>
+                <p class="text-xs text-slate-400">Xin chào, <span class="font-bold text-white">{{ user.name }}</span> ({{ user.role }})</p>
+            </div>
+            <a href="/logout" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        
+        <div class="grid grid-cols-3 gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+            <a href="/" class="py-3 bg-emerald-500 text-white text-center font-bold text-xs rounded-xl shadow-sm">
+                <i class="fa-solid fa-gauge mb-1 block text-lg"></i> Tổng Quan
+            </a>
+            <a href="/cong-viec" class="py-3 text-slate-600 hover:bg-slate-50 text-center font-bold text-xs rounded-xl">
+                <i class="fa-solid fa-hammer mb-1 block text-lg"></i> Công Việc
+            </a>
+            <a href="/kho" class="py-3 text-slate-600 hover:bg-slate-50 text-center font-bold text-xs rounded-xl">
+                <i class="fa-solid fa-boxes-stacked mb-1 block text-lg"></i> Kho Vật Tư
+            </a>
+        </div>
+
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-calendar-check text-lg"></i></div>
+                <div>
+                    <h2 class="font-black text-slate-800 text-base">Trạm Chấm Công Theo Ngày</h2>
+                    <p class="text-xs text-slate-400">Chọn công trình đang làm và bấm chọn hệ số công</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3">
+                <label class="block text-xs font-bold text-slate-500 uppercase">Chọn Công Việc / Công Trình:</label>
+                <select id="select-ma-cv" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 focus:outline-none focus:border-emerald-500">
+                    </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="thoChamCongTheoNgay(1.0)" class="py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-md transition-all flex flex-col items-center gap-1">
+                    <i class="fa-solid fa-check-double text-lg"></i>
+                    CHẤM 1 NGÀY CÔNG
+                </button>
+                <button onclick="thoChamCongTheoNgay(0.5)" class="py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-sm rounded-2xl shadow-md transition-all flex flex-col items-center gap-1">
+                    <i class="fa-solid fa-hourglass-half text-lg"></i>
+                    CHẤM 1/2 NGÀY CÔNG
+                </button>
+            </div>
+        </div>
+
+        {% if user.role == 'ADMIN' %}
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-sliders text-lg"></i></div>
+                <div>
+                    <h2 class="font-black text-slate-800 text-base">Bàn Điều Hành Hệ Thống</h2>
+                    <p class="text-xs text-slate-400">Quyền hạn quản trị của Sếp Nguyễn Khắc Minh</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="moModal('modal-tao-tai-khoan')" class="p-4 bg-slate-50 hover:bg-blue-50 border border-slate-100 hover:border-blue-200 rounded-2xl flex flex-col items-center gap-2 transition-all">
+                    <i class="fa-solid fa-user-plus text-blue-600 text-2xl"></i>
+                    <span class="text-xs font-bold text-slate-700">Tạo Tài Khoản Thợ</span>
+                </button>
+                <button onclick="moModal('modal-them-cong-viec')" class="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-2xl flex flex-col items-center gap-2 transition-all">
+                    <i class="fa-solid fa-folder-plus text-emerald-600 text-2xl"></i>
+                    <span class="text-xs font-bold text-slate-700">Thêm Công Trình Mới</span>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <div id="modal-tao-tai-khoan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+            <button onclick="dongModal('modal-tao-tai-khoan')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-slate-800">Cấp Tài Khoản Thợ Mới</h3>
+            <div class="space-y-3 pt-4">
+                <input id="acc-username" type="text" placeholder="Tên đăng nhập" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
+                <input id="acc-password" type="password" placeholder="Mật khẩu" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
+                <input id="acc-fullname" type="text" placeholder="Họ và tên thợ" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
+                <input id="acc-luong" type="number" placeholder="Lương theo giờ (để quy đổi công)" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold text-blue-600">
+                <button onclick="xuLyTaoTaiKhoan()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl">LƯU TÀI KHOẢN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-them-cong-viec" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+            <button onclick="dongModal('modal-them-cong-viec')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-slate-800">Khởi Tạo Công Trình</h3>
+            <div class="space-y-3 pt-4">
+                <input id="cv-ma" type="text" placeholder="Mã công trình (VD: DH001)" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold">
+                <input id="cv-ten" type="text" placeholder="Tên công trình" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="cv-ngay-bd" type="date" class="w-full p-3 bg-slate-50 border rounded-xl text-sm">
+                    <input id="cv-ngay-kt" type="date" class="w-full p-3 bg-slate-50 border rounded-xl text-sm">
+                </div>
+                <input id="cv-thu-nhap" type="number" placeholder="Tổng thu nhập nhận từ khách" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-black text-emerald-600">
+                <button onclick="xuLyThemCongViec()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl">BẮT ĐẦU DỰ ÁN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function moModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function dongModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // Hàm gọi API lấy danh sách các đơn hàng gỗ/nhựa đang chạy
+        async function loadDanhSachCongViec() {
+            let res = await fetch('/api/cong-viec/danh-sach');
+            let data = await res.json();
+            let select = document.getElementById('select-ma-cv');
+            select.innerHTML = '';
+            
+            if (data.length === 0) {
+                select.innerHTML = `<option value="">-- Chưa có dự án nào hoạt động --</option>`;
+                return;
+            }
+            
+            data.forEach(cv => {
+                if(cv.trang_thai === 'ĐANG CHẠY') {
+                    select.innerHTML += `<option value="${cv.ma_cv}">[${cv.ma_cv}] - ${cv.ten_cv}</option>`;
+                }
+            });
+        }
+
+        // Thợ xử lý chấm công tính hệ số Ngày Công trực tiếp
+        async function thoChamCongTheoNgay(heSo) {
+            let maCv = document.getElementById('select-ma-cv').value;
+            if(!maCv) { alert("Vui lòng chọn công trình trước khi chấm công!"); return; }
+            
+            let res = await fetch('/api/tho/cham-cong', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ he_so_cong: heSo, ma_cv: maCv })
+            });
+            let result = await res.json();
+            alert(result.message);
+        }
+
+        // Admin xử lý tạo tài khoản thợ mới
+        async function xuLyTaoTaiKhoan() {
+            let u = document.getElementById('acc-username').value;
+            let p = document.getElementById('acc-password').value;
+            let f = document.getElementById('acc-fullname').value;
+            let l = document.getElementById('acc-luong').value;
+            
+            if(!u || !p || !f) { alert("Vui lòng điền đủ thông tin tài khoản!"); return; }
+
+            let res = await fetch('/api/admin/tao-tai-khoan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: u, password: p, fullname: f, luong_theo_gio: l })
+            });
+            let result = await res.json();
+            alert(result.message);
+            if(result.status === 'success') {
+                dongModal('modal-tao-tai-khoan');
+                document.getElementById('acc-username').value = '';
+                document.getElementById('acc-password').value = '';
+                document.getElementById('acc-fullname').value = '';
+                document.getElementById('acc-luong').value = '';
+            }
+        }
+
+        // Admin xử lý khởi tạo dự án sản xuất mới cho xưởng
+        async function xuLyThemCongViec() {
+            let ma = document.getElementById('cv-ma').value;
+            let ten = document.getElementById('cv-ten').value;
+            let bd = document.getElementById('cv-ngay-bd').value;
+            let kt = document.getElementById('cv-ngay-kt').value;
+            let thu = document.getElementById('cv-thu-nhap').value;
+            
+            if(!ma || !ten) { alert("Vui lòng điền Mã và Tên công trình!"); return; }
+
+            let res = await fetch('/api/admin/them-cong-viec', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ma_cv: ma, ten_cv: ten, ngay_bat_dau: bd, ngay_ket_thuc: kt, tong_thu_nhap: thu })
+            });
+            let result = await res.json();
+            alert(result.message);
+            if(result.status === 'success') {
+                dongModal('modal-them-cong-viec');
+                await loadDanhSachCongViec(); // Cập nhật lại ô chọn tức thì
+                document.getElementById('cv-ma').value = '';
+                document.getElementById('cv-ten').value = '';
+                document.getElementById('cv-thu-nhap').value = '';
+            }
+        }
+
+        // Đảm bảo chạy mượt mà ngay khi Render tải xong giao diện
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadDanhSachCongViec();
+        });
+    </script>
+</body>
+</html>

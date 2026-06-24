@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT3M - Quản Lý Tiến Độ & Lợi Nhuận</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-50 font-sans pb-24">
+
+    <header class="bg-slate-900 text-white px-4 py-4 sticky top-0 z-40 shadow-md">
+        <div class="flex justify-between items-center max-w-4xl mx-auto">
+            <div>
+                <h1 class="text-xl font-black tracking-wider text-emerald-400">QUẢN LÝ TIẾN ĐỘ</h1>
+                <p class="text-xs text-slate-400">Báo cáo dòng tiền chi tiết</p>
+            </div>
+            <a href="/" class="text-sm bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl"><i class="fa-solid fa-home"></i></a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="grid grid-cols-3 gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+            <a href="/" class="py-3 text-slate-600 text-center font-bold text-xs rounded-xl">⚙️ Tổng Quan</a>
+            <a href="/cong-viec" class="py-3 bg-emerald-500 text-white text-center font-bold text-xs rounded-xl shadow-sm">🛠️ Công Việc</a>
+            <a href="/kho" class="py-3 text-slate-600 text-center font-bold text-xs rounded-xl">📦 Kho Vật Tư</a>
+        </div>
+
+        {% if user.role == 'ADMIN' %}
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <h3 class="font-black text-sm text-slate-800 border-b pb-2">📦 Đồng Bộ Phân Bổ Vật Tư (Dữ liệu ABF)</h3>
+            <div class="grid grid-cols-3 gap-2">
+                <select id="boc-ma-cv" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-bold text-slate-700"></select>
+                <select id="boc-ma-vt" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-bold text-slate-700"></select>
+                <input id="boc-sl" type="number" placeholder="Số lượng dùng" class="p-2.5 bg-slate-50 border rounded-xl text-xs font-black text-blue-600">
+            </div>
+            <button onclick="xuLyBocTachVatTu()" class="w-full py-2.5 bg-slate-900 text-white font-black text-xs rounded-xl">
+                ĐỒNG BỘ TIÊU HAO VẬT TƯ VÀO CÔNG TRÌNH
+            </button>
+        </div>
+        {% endif %}
+
+        <div class="space-y-3">
+            <h3 class="font-black text-slate-800 text-sm uppercase pl-1">📁 Danh Sách Công Trình Đang Vận Hành</h3>
+            <div id="container-cong-viec" class="space-y-2"></div>
+        </div>
+    </main>
+
+    <div id="modal-loi-nhuan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl relative">
+            <button onclick="document.getElementById('modal-loi-nhuan').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-base text-slate-800 border-b pb-2">📊 Quyết Toán Dự Án</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between p-3 bg-slate-50 rounded-xl"><span class="font-bold">Công trình:</span><span id="p-ten" class="font-black">---</span></div>
+                <div class="flex justify-between p-2"><span>Tổng thu hợp đồng:</span><span id="p-thu" class="font-bold text-slate-900">0 đ</span></div>
+                <div class="flex justify-between p-2 text-rose-600"><span>Tiền vốn vật tư:</span><span id="p-vt" class="font-bold">-0 đ</span></div>
+                <div class="flex justify-between p-2 text-amber-600"><span>Tiền công thợ:</span><span id="p-nc" class="font-bold">-0 đ</span></div>
+                <div class="flex justify-between p-4 bg-emerald-50 rounded-2xl text-emerald-700 text-base font-black">
+                    <span>LỢI NHUẬN THUẦN:</span><span id="p-lai" class="text-xl">0 đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function init() {
+            await loadCongViecList();
+            if(document.getElementById('boc-ma-cv')) { await loadDropdowns(); }
+        }
+
+        async function loadCongViecList() {
+            let res = await fetch('/api/cong-viec/danh-sach');
+            let data = await res.json();
+            let container = document.getElementById('container-cong-viec');
+            container.innerHTML = '';
+            data.forEach(cv => {
+                let showBtn = `{% if user.role == 'ADMIN' %}<button onclick="xemBaoCaoLoiNhuan('${cv.ma_cv}')" class="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-xl">Xem Lãi</button>{% endif %}`;
+                container.innerHTML += `
+                    <div class="bg-white rounded-2xl p-4 border border-slate-100 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-sm">${cv.ten_cv}</h4>
+                            <p class="text-[10px] text-slate-400">Mã: ${cv.ma_cv} | Hạn: ${cv.ngay_ket_thuc}</p>
+                        </div>
+                        <div class="flex items-center gap-2"><span class="text-xs px-2 py-0.5 bg-slate-100 rounded-md">${cv.trang_thai}</span>${showBtn}</div>
+                    </div>`;
+            });
+        }
+
+        async function loadDropdowns() {
+            let resCv = await fetch('/api/cong-viec/danh-sach'); let cvs = await resCv.json();
+            let selectCv = document.getElementById('boc-ma-cv'); selectCv.innerHTML = '';
+            cvs.forEach(c => selectCv.innerHTML += `<option value="${c.ma_cv}">${c.ma_cv}</option>`);
+
+            let resVt = await fetch('/api/kho/danh-sach'); let vts = await resVt.json();
+            let selectVt = document.getElementById('boc-ma-vt'); selectVt.innerHTML = '';
+            vts.forEach(v => selectVt.innerHTML += `<option value="${v.ma_vt}">${v.ten_vt}</option>`);
+        }
+
+        async function xuLyBocTachVatTu() {
+            let maCv = document.getElementById('boc-ma-cv').value;
+            let maVt = document.getElementById('boc-ma-vt').value;
+            let sl = document.getElementById('boc-sl').value;
+            let res = await fetch('/api/admin/add-vat-tu-cong-viec', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ma_cv: maCv, ma_vt: maVt, so_luong_dung: sl })
+            });
+            let result = await res.json(); alert(result.message);
+        }
+
+        async function xemBaoCaoLoiNhuan(maCv) {
+            let res = await fetch(`/api/admin/bao-cao-loi-nhuan/${maCv}`);
+            let data = await res.json();
+            document.getElementById('p-ten').innerText = data.ten_cv;
+            document.getElementById('p-thu').innerText = Number(data.tong_thu_nhap).toLocaleString() + " đ";
+            document.getElementById('p-vt').innerText = "-" + Number(data.chi_phi_vattu).toLocaleString() + " đ";
+            document.getElementById('p-nc').innerText = "-" + Number(data.chi_phi_nhan_cong).toLocaleString() + " đ";
+            document.getElementById('p-lai').innerText = Number(data.loi_nhuan_thuan).toLocaleString() + " đ";
+            document.getElementById('modal-loi-nhuan').classList.remove('hidden');
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
