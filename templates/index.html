@@ -3,213 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KT3M - Hệ Thống Quản Trị Xưởng</title>
+    <title>KT3M SYSTEM - Nội Thất Nguyễn Minh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="bg-slate-50 font-sans min-h-screen pb-24">
+<body class="bg-slate-100 font-sans min-h-screen">
 
-    <header class="bg-slate-900 text-white px-4 py-4 sticky top-0 z-40 shadow-md">
-        <div class="flex justify-between items-center max-w-4xl mx-auto">
-            <div>
-                <h1 class="text-xl font-black tracking-wider text-emerald-400">KT3M SYSTEM</h1>
-                <p class="text-xs text-slate-400">Xin chào, <span class="font-bold text-white">{{ user.name }}</span> ({{ user.role }})</p>
+    {% if page == 'login' %}
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm p-6 rounded-3xl border border-slate-200/80 shadow-2xl space-y-5">
+            <div class="text-center">
+                <h1 class="text-2xl font-black tracking-wider text-slate-900">KT3M SYSTEM</h1>
+                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mt-1">Xưởng Nội Thất Nguyễn Minh</p>
             </div>
-            <a href="/logout" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
+            <div class="space-y-3">
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-4 top-4 text-slate-400"></i>
+                    <input id="login-username" type="text" placeholder="Tên đăng nhập" class="w-full pl-11 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-4 top-4 text-slate-400"></i>
+                    <input id="login-password" type="password" placeholder="Mật khẩu bảo mật" class="w-full pl-11 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                </div>
+                <button onclick="xuLyDangNhap()" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-sm rounded-2xl shadow-lg transition-all">ĐĂNG NHẬP HỆ THỐNG</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function xuLyDangNhap() {
+            let u = document.getElementById('login-username').value;
+            let p = document.getElementById('login-password').value;
+            let res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: u, password: p })
+            });
+            let data = await res.json();
+            if(data.status === 'success') location.reload();
+            else alert(data.message);
+        }
+    </script>
+
+    {% else %}
+    <header class="bg-slate-900 text-white px-4 py-4 sticky top-0 z-40 shadow-md">
+        <div class="flex justify-between items-center max-w-5xl mx-auto">
+            <div>
+                <h1 class="text-lg font-black tracking-wider text-emerald-400">KT3M SYSTEM</h1>
+                <p class="text-xs text-slate-400">Xin chào, <span class="font-bold text-white">{{ user.name }}</span> (<span class="text-amber-400 font-bold">{{ user.role }}</span>)</p>
+            </div>
+            <a href="/logout" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl font-bold text-slate-300">
+                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+            </a>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-6">
-        
-        <div class="grid grid-cols-3 gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
-            <a href="/" class="py-3 bg-emerald-500 text-white text-center font-bold text-xs rounded-xl shadow-sm">
-                <i class="fa-solid fa-gauge mb-1 block text-lg"></i> Tổng Quan
-            </a>
-            <a href="/cong-viec" class="py-3 text-slate-600 hover:bg-slate-50 text-center font-bold text-xs rounded-xl">
-                <i class="fa-solid fa-hammer mb-1 block text-lg"></i> Công Việc
-            </a>
-            <a href="/kho" class="py-3 text-slate-600 hover:bg-slate-50 text-center font-bold text-xs rounded-xl">
-                <i class="fa-solid fa-boxes-stacked mb-1 block text-lg"></i> Kho Vật Tư
-            </a>
-        </div>
+    {% if user.role == 'ADMIN' %}
+    <nav class="max-w-5xl mx-auto p-3 grid grid-cols-4 gap-2 bg-white mt-4 rounded-2xl shadow-sm border border-slate-200/60">
+        <button onclick="chuyenTab('tab-cham-cong')" class="tab-btn py-2.5 bg-emerald-500 text-white font-black text-xs rounded-xl shadow-sm flex flex-col items-center gap-1">
+            <i class="fa-solid fa-calendar-days text-base"></i> 1. Chấm Công
+        </button>
+        <button onclick="chuyenTab('tab-cong-trinh')" class="tab-btn py-2.5 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl flex flex-col items-center gap-1">
+            <i class="fa-solid fa-hammer text-base"></i> 2. Công Trình
+        </button>
+        <button onclick="chuyenTab('tab-vat-tu')" class="tab-btn py-2.5 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl flex flex-col items-center gap-1">
+            <i class="fa-solid fa-boxes-stacked text-base"></i> 3. Vật Tư Kho
+        </button>
+        <button onclick="chuyenTab('tab-cap-tai-khoan')" class="tab-btn py-2.5 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl flex flex-col items-center gap-1">
+            <i class="fa-solid fa-user-lock text-base"></i> 4. Tạo TK Thợ
+        </button>
+    </nav>
+    {% endif %}
 
-        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-calendar-check text-lg"></i></div>
+    <main class="max-w-5xl mx-auto p-4">
+        <section id="tab-cham-cong" class="tab-content space-y-4">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div>
-                    <h2 class="font-black text-slate-800 text-base">Trạm Chấm Công Theo Ngày</h2>
-                    <p class="text-xs text-slate-400">Chọn công trình đang làm và bấm chọn hệ số công</p>
+                    <h2 class="font-black text-slate-800 text-base">Hồ Sơ Chấm Công Sổ Lương</h2>
+                    <p class="text-xs text-slate-400">Theo dõi thông số tích lũy minh bạch thời gian thực</p>
+                </div>
+                {% if user.role == 'ADMIN' %}
+                <div class="flex gap-2">
+                    <button onclick="moModal('modal-them-nhan-vien')" class="p-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 shadow-sm flex items-center gap-1"><i class="fa-solid fa-plus"></i> Thêm Thợ</button>
+                    <button onclick="xuLyResetThang()" class="p-2.5 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 shadow-sm flex items-center gap-1"><i class="fa-solid fa-rotate"></i> Chốt Lương & Reset</button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div id="danh-sach-tho-container" class="grid gap-4 md:grid-cols-2"></div>
+        </section>
+
+        <section id="tab-cong-trinh" class="tab-content hidden space-y-4">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
+                <div>
+                    <h2 class="font-black text-slate-800 text-base">Hạch Toán Dự Án - Biên Lợi Nhuận Xưởng</h2>
+                    <p class="text-xs text-slate-400">Tự động hóa khấu trừ kho sỉ vật tư và dồn chi phí nhân công</p>
+                </div>
+                <button onclick="moModalThemCongTrinh()" class="p-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 shadow-sm flex items-center gap-1"><i class="fa-solid fa-folder-plus"></i> Thêm Công Trình</button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse text-xs font-medium text-slate-700">
+                    <thead>
+                        <tr class="bg-slate-900 text-slate-200 font-bold uppercase tracking-wider">
+                            <th class="p-3">Tên Công Trình</th>
+                            <th class="p-3">Đơn Giá Nhận</th>
+                            <th class="p-3 text-amber-600">Chi Phí Vật Tư</th>
+                            <th class="p-3 text-blue-600">Chi Phí Nhân Công</th>
+                            <th class="p-3 text-emerald-500 bg-slate-800/50">Lợi Nhuận Ròng</th>
+                            <th class="p-3 text-center">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-cong-trinh-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="tab-vat-tu" class="tab-content hidden space-y-4">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
+                <div>
+                    <h2 class="font-black text-slate-800 text-base">Kho Phôi Vật Tư Sỉ Xưởng</h2>
+                    <p class="text-xs text-slate-400">Khai báo đơn giá nhập đầu vào tấm gỗ, tấm nhựa rỗng Vincoplast...</p>
+                </div>
+                <button onclick="moModal('modal-them-vat-tu')" class="p-2.5 bg-amber-600 text-white rounded-xl font-bold text-xs hover:bg-amber-700 shadow-sm flex items-center gap-1"><i class="fa-solid fa-box-open"></i> Khai Báo Thêm Vật Tư</button>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3" id="danh-sach-vat-tu-cards"></div>
+        </section>
+
+        <section id="tab-cap-tai-khoan" class="tab-content hidden max-w-md mx-auto">
+            <div class="bg-white rounded-3xl p-5 border border-slate-200/60 shadow-md space-y-4">
+                <h3 class="font-black text-slate-800 text-base border-b pb-2"><i class="fa-solid fa-user-lock text-blue-600"></i> Cấp Quyền Đăng Nhập Cho Thợ</h3>
+                <div class="space-y-3 text-xs font-bold text-slate-500">
+                    <div>
+                        <label class="block mb-1">LIÊN KẾT HỒ SƠ NHÂN VIÊN:</label>
+                        <select id="tk-nhan-vien-id" class="w-full p-3 bg-slate-50 border rounded-xl font-bold text-slate-800 focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block mb-1">TÊN TÀI KHOẢN ĐĂNG NHẬP:</label>
+                        <input id="tk-username" type="text" placeholder="Ví dụ: thonguyen01" class="w-full p-3 bg-slate-50 border rounded-xl font-medium text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block mb-1">MẬT KHẨU KHỞI TẠO:</label>
+                        <input id="tk-password" type="password" placeholder="Mật khẩu xem lương" class="w-full p-3 bg-slate-50 border rounded-xl font-medium text-slate-800">
+                    </div>
+                    <button onclick="xuLyCapTaiKhoanTho()" class="w-full py-3.5 bg-blue-600 text-white font-black text-sm rounded-xl shadow-md hover:bg-blue-700 transition-all">KÍCH HOẠT MỞ KHÓA BẢNG LƯƠNG</button>
                 </div>
             </div>
-            
-            <div class="space-y-3">
-                <label class="block text-xs font-bold text-slate-500 uppercase">Chọn Công Việc / Công Trình:</label>
-                <select id="select-ma-cv" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 focus:outline-none focus:border-emerald-500">
-                </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="thoChamCongTheoNgay(1.0)" class="py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-md transition-all flex flex-col items-center gap-1">
-                    <i class="fa-solid fa-check-double text-lg"></i>
-                    CHẤM 1 NGÀY CÔNG
-                </button>
-                <button onclick="thoChamCongTheoNgay(0.5)" class="py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-sm rounded-2xl shadow-md transition-all flex flex-col items-center gap-1">
-                    <i class="fa-solid fa-hourglass-half text-lg"></i>
-                    CHẤM 1/2 NGÀY CÔNG
-                </button>
-            </div>
-        </div>
-
-        {% if user.role == 'ADMIN' %}
-        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-sliders text-lg"></i></div>
-                <div>
-                    <h2 class="font-black text-slate-800 text-base">Bàn Điều Hành Hệ Thống</h2>
-                    <p class="text-xs text-slate-400">Quyền hạn quản trị của Sếp Nguyễn Khắc Minh</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="moModal('modal-tao-tai-khoan')" class="p-4 bg-slate-50 hover:bg-blue-50 border border-slate-100 hover:border-blue-200 rounded-2xl flex flex-col items-center gap-2 transition-all">
-                    <i class="fa-solid fa-user-plus text-blue-600 text-2xl"></i>
-                    <span class="text-xs font-bold text-slate-700">Tạo Tài Khoản Thợ</span>
-                </button>
-                <button onclick="moModal('modal-them-cong-viec')" class="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-2xl flex flex-col items-center gap-2 transition-all">
-                    <i class="fa-solid fa-folder-plus text-emerald-600 text-2xl"></i>
-                    <span class="text-xs font-bold text-slate-700">Thêm Công Trình Mới</span>
-                </button>
-            </div>
-        </div>
-        {% endif %}
-
+        </section>
     </main>
 
-    <div id="modal-tao-tai-khoan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
-            <button onclick="dongModal('modal-tao-tai-khoan')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-black text-lg text-slate-800">Cấp Tài Khoản Thợ Mới</h3>
-            <div class="space-y-3 pt-4">
-                <input id="acc-username" type="text" placeholder="Tên đăng nhập" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
-                <input id="acc-password" type="password" placeholder="Mật khẩu" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
-                <input id="acc-fullname" type="text" placeholder="Họ và tên thợ" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
-                <input id="acc-luong" type="number" placeholder="Lương theo giờ (để quy đổi công)" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold text-blue-600">
-                <button onclick="xuLyTaoTaiKhoan()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl">LƯU TÀI KHOẢN</button>
+    <div id="modal-them-nhan-vien" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl relative">
+            <button onclick="dongModal('modal-them-nhan-vien')" class="absolute top-4 right-4 text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-slate-800 text-base border-b pb-2">Khai Báo Nhân Viên Mới</h3>
+            <div class="space-y-3 pt-3 text-xs font-bold text-slate-500">
+                <input id="nv-fullname" type="text" placeholder="Họ và tên thợ" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800">
+                <input id="nv-congviec" type="text" placeholder="Tên công việc chuyên trách" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800">
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="nv-luong" type="number" placeholder="Mức lương (đồng/ngày)" class="w-full p-3 bg-slate-50 border rounded-xl text-blue-600 font-bold">
+                    <input id="nv-ngaychot" type="number" placeholder="Ngày chốt lương (VD: 30)" class="w-full p-3 bg-slate-50 border rounded-xl text-red-500 font-bold">
+                </div>
+                <input id="nv-doanhso" type="number" placeholder="Doanh số thưởng tháng này" class="w-full p-3 bg-slate-50 border rounded-xl text-purple-600 font-bold">
+                <textarea id="nv-ghichu" placeholder="Ghi chú đặc thù..." class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800 h-16"></textarea>
+                <button onclick="xuLyThemNhanVien()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md">LƯU HỒ SƠ</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-them-cong-viec" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
-            <button onclick="dongModal('modal-them-cong-viec')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-black text-lg text-slate-800">Khởi Tạo Công Trình</h3>
-            <div class="space-y-3 pt-4">
-                <input id="cv-ma" type="text" placeholder="Mã công trình (VD: DH001)" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold">
-                <input id="cv-ten" type="text" placeholder="Tên công trình" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm">
-                <div class="grid grid-cols-2 gap-2">
-                    <input id="cv-ngay-bd" type="date" class="w-full p-3 bg-slate-50 border rounded-xl text-sm">
-                    <input id="cv-ngay-kt" type="date" class="w-full p-3 bg-slate-50 border rounded-xl text-sm">
+    <div id="modal-them-cong-trinh" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="dongModal('modal-them-cong-trinh')" class="absolute top-4 right-4 text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-slate-800 text-base border-b pb-2">Khởi Tạo Hạch Toán Công Trình</h3>
+            <div class="space-y-3 pt-3 text-xs font-bold text-slate-500">
+                <input id="ct-ten" type="text" placeholder="Tên công trình / Đơn hàng nhận" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800 font-bold">
+                <input id="ct-dongia" type="number" placeholder="Đơn giá hợp đồng nhận từ khách (VND)" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800 font-bold">
+                
+                <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50 space-y-2">
+                    <label class="block text-slate-700 font-black"><i class="fa-solid fa-boxes-stacked text-amber-500"></i> Click Chọn Vật Tư Cần Dùng Cho Dự Án:</label>
+                    <div id="danh-sach-vat-tu-tich-chon" class="space-y-2 max-h-40 overflow-y-auto"></div>
                 </div>
-                <input id="cv-thu-nhap" type="number" placeholder="Tổng thu nhập nhận từ khách" class="w-full p-3 bg-slate-50 border rounded-xl text-sm font-black text-emerald-600">
-                <button onclick="xuLyThemCongViec()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl">BẮT ĐẦU DỰ ÁN</button>
+
+                <button onclick="xuLyThemCongTrinh()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-md">KHỞI TẠO VÀ KHẤU TRỪ KHO GỐC</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-them-vat-tu" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl relative">
+            <button onclick="dongModal('modal-them-vat-tu')" class="absolute top-4 right-4 text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-slate-800 text-base border-b pb-2">Khai Báo Phôi Vật Tư Kho Sỉ</h3>
+            <div class="space-y-3 pt-3 text-xs font-bold text-slate-500">
+                <input id="vt-ten" type="text" placeholder="Tên loại vật tư (VD: Tấm nhựa rỗng Vincoplast)" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800">
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="vt-gia" type="number" placeholder="Giá nhập sỉ (VND)" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800">
+                    <input id="vt-soluong" type="number" placeholder="Số lượng nhập kho" class="w-full p-3 bg-slate-50 border rounded-xl text-slate-800">
+                </div>
+                <button onclick="xuLyThemVatTu()" class="w-full py-3 bg-amber-600 text-white font-bold rounded-xl shadow-md">CẬP NHẬT NHẬP KHO</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-luu-cham-cong" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl relative">
+            <button onclick="dongModal('modal-luu-cham-cong')" class="absolute top-4 right-4 text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-slate-800 text-base border-b pb-2">Xác Nhận Trạm Chấm Công</h3>
+            <div class="space-y-3 pt-3 text-xs font-bold text-slate-500">
+                <p class="text-slate-700">Chấm công cho: <span id="cc-label-ten" class="font-black text-slate-900"></span></p>
+                <p class="text-slate-700">Hệ số công: <span id="cc-label-heso" class="font-black text-blue-600"></span></p>
+                <div>
+                    <label class="block mb-1">CHỈ ĐỊNH CHO CÔNG TRÌNH NÀO? (Tự động tính nhân công):</label>
+                    <select id="cc-select-cong-trinh" class="w-full p-3 bg-slate-50 border rounded-xl font-bold text-slate-800 focus:outline-none">
+                        <option value="">-- Không chỉ định (Tính việc xưởng chung) --</option>
+                    </select>
+                </div>
+                <button onclick="xacNhanGuiDuLieuChamCong()" class="w-full py-3 bg-emerald-600 text-white font-black rounded-xl shadow-md">GHI NHẬN LÊN HỆ THỐNG</button>
             </div>
         </div>
     </div>
 
     <script>
+        const USER_ROLE = "{{ user.role }}";
+        let listCongTrinhToanCuc = [];
+        let listVatTuToanCuc = [];
+        let ccTamNhanVienId = null;
+        let ccTamHeSo = null;
+
         function moModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function dongModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-        // Tải danh sách công trình đang chạy
-        async function loadDanhSachCongViec() {
-            let res = await fetch('/api/cong-viec/danh-sach');
+        function chuyenTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-500', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-50');
+            });
+            event.currentTarget.classList.add('bg-emerald-500', 'text-white', 'shadow-sm');
+            event.currentTarget.classList.remove('text-slate-600', 'hover:bg-slate-50');
+        }
+
+        // Tải danh sách thợ & kết xuất thẻ chi tiết (Theo yêu cầu sếp Minh)
+        async function loadDanhSachTho() {
+            let res = await fetch('/api/admin/thong-ke-danh-sach');
+            if(!res.ok) res = await fetch('/api/admin/danh-sach-thong-ke'); // Hỗ trợ fallback route
             let data = await res.json();
-            let select = document.getElementById('select-ma-cv');
-            select.innerHTML = '';
+            let container = document.getElementById('danh-sach-tho-container');
+            container.innerHTML = '';
             
-            if (data.length === 0) {
-                select.innerHTML = `<option value="">-- Chưa có dự án nào hoạt động --</option>`;
-                return;
+            data.forEach(tho => {
+                let htmlLichSu = tho.lich_su.map(l => `
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <span class="font-bold text-slate-700">${l.ngay}</span>
+                        <span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-black text-[10px]">${l.he_so} CÔNG</span>
+                        <span class="text-slate-400 font-medium truncate max-w-[120px]">${l.cong_trinh}</span>
+                    </div>
+                `).join('');
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/60 shadow-sm space-y-4 relative overflow-hidden">
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                            <div>
+                                <h3 class="font-black text-slate-800 text-base">${tho.fullname}</h3>
+                                <p class="text-xs text-emerald-600 font-bold"><i class="fa-solid fa-briefcase"></i> Công việc: ${tho.cong_viec || 'Chưa phân công'}</p>
+                            </div>
+                            <span class="bg-emerald-50 text-emerald-700 text-xs font-black px-2.5 py-1 rounded-full">Mức: ${tho.luong_co_ban.toLocaleString()}đ/ngày</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 text-xs font-bold text-slate-500 bg-slate-50/80 p-3 rounded-2xl">
+                            <div><i class="fa-solid fa-calendar-check text-blue-500"></i> Tổng công: <span class="text-slate-900 font-black text-sm">${tho.tong_cong}</span></div>
+                            <div><i class="fa-solid fa-calendar-day text-amber-500"></i> Chốt lương: Ngàyd ${tho.ngay_chot_luong}</div>
+                            <div><i class="fa-solid fa-chart-line text-purple-500"></i> Doanh số: <span class="text-purple-600">${tho.doanh_so.toLocaleString()}đ</span></div>
+                            <div class="bg-amber-100 text-amber-900 p-1 rounded text-center col-span-2 mt-1">
+                                TỔNG TIỀN DỰ KIẾN NHẬN: <span class="font-black text-red-600 text-sm">${(tho.luong_tich_luy + tho.doanh_so).toLocaleString()}đ</span>
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            <strong>Ghi chú:</strong> ${tho.ghi_chu || 'Không có ghi chú'}
+                        </div>
+
+                        ${USER_ROLE === 'ADMIN' ? `
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="kichHoatTrangChamCong(${tho.id}, '${tho.fullname}', 1.0)" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-sm transition-all"><i class="fa-solid fa-check"></i> CHẤM 1 CÔNG</button>
+                            <button onclick="kichHoatTrangChamCong(${tho.id}, '${tho.fullname}', 0.5)" class="py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-sm transition-all"><i class="fa-solid fa-hourglass-half"></i> CHẤM 1/2 CÔNG</button>
+                        </div>
+                        ` : ''}
+
+                        <div class="space-y-1.5 pt-2 border-t border-slate-100">
+                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký Ngày Công Chi Tiết:</p>
+                            <div class="space-y-1 max-h-32 overflow-y-auto text-[11px]">${htmlLichSu || '<p class="text-slate-400">Chưa có ngày công nào được ghi nhận trong tháng.</p>'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Trạm trung gian mở bảng chọn công trình khi bấm chấm công (Góp ý 1)
+        function kichHoatTrangChamCong(id, ten, heSo) {
+            ccTamNhanVienId = id;
+            ccTamHeSo = heSo;
+            document.getElementById('cc-label-ten').innerText = ten;
+            document.getElementById('cc-label-heso').innerText = heSo + " Công";
+            
+            let select = document.getElementById('cc-select-cong-trinh');
+            select.innerHTML = '<option value="">-- Không chỉ định (Tính việc xưởng chung) --</option>';
+            listCongTrinhToanCuc.forEach(ct => {
+                select.innerHTML += `<option value="${ct.id}">${ct.ten_ct}</option>`;
+            });
+            moModal('modal-luu-cham-cong');
+        }
+
+        async function xacNhanGuiDuLieuChamCong() {
+            let ctId = document.getElementById('cc-select-cong-trinh').value;
+            let res = await fetch('/api/admin/cham-cong', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nhan_vien_id: ccTamNhanVienId, he_so_cong: ccTamHeSo, cong_trinh_id: ctId ? parseInt(ctId) : null })
+            });
+            let d = await res.json();
+            alert(d.message);
+            if(d.status === 'success') { dongModal('modal-luu-cham-cong'); loadHệThống(); }
+        }
+
+        // Tải danh sách công trình
+        async function loadDanhSachCongTrinh() {
+            if(USER_ROLE !== 'ADMIN') return;
+            let res = await fetch('/api/admin/danh-sach-cong-trinh');
+            listCongTrinhToanCuc = await res.json();
+            let tbody = document.getElementById('table-cong-trinh-body');
+            tbody.innerHTML = '';
+            
+            listCongTrinhToanCuc.forEach(ct => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-3 font-bold text-slate-900">${ct.ten_ct}</td>
+                        <td class="p-3">${ct.don_gia.toLocaleString()}đ</td>
+                        <td class="p-3 text-amber-600 font-bold">${ct.chi_phi_vat_tu.toLocaleString()}đ</td>
+                        <td class="p-3 text-blue-600 font-bold">${ct.chi_phi_nhan_cong.toLocaleString()}đ</td>
+                        <td class="p-3 text-emerald-600 font-black bg-emerald-50/40">${ct.loi_nhuan.toLocaleString()}đ</td>
+                        <td class="p-3 text-center">
+                            <button onclick="xoaCongTrinh(${ct.id})" class="text-red-500 hover:text-red-700 text-sm"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Bật bảng chọn nhanh danh sách vật tư khi thêm công trình mới (Quy trình trừ kho sếp Minh duyệt)
+        function moModalThemCongTrinh() {
+            let container = document.getElementById('danh-sach-vat-tu-tich-chon');
+            container.innerHTML = '';
+            
+            if(listVatTuToanCuc.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 italic">Kho trống! Vui lòng qua phân hệ 3 khai báo vật tư trước.</p>';
             }
             
-            data.forEach(cv => {
-                if(cv.trang_thai === 'ĐANG CHẠY') {
-                    select.innerHTML += `<option value="${cv.ma_cv}">[${cv.ma_cv}] - ${cv.ten_cv}</option>`;
+            listVatTuToanCuc.forEach(vt => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 shadow-sm text-[11px]">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" value="${vt.id}" class="vt-checkbox w-4 h-4 rounded text-emerald-500">
+                            <span class="font-bold text-slate-800">${vt.ten_vt}</span>
+                            <span class="text-slate-400">(Tồn: ${vt.so_luong} tấm - Giá: ${vt.gia_nhap.toLocaleString()}đ)</span>
+                        </div>
+                        <input type="number" placeholder="SL dùng" class="vt-sl-dung w-16 p-1 bg-slate-50 border rounded text-center font-bold text-slate-800" min="1">
+                    </div>
+                `;
+            });
+            moModal('modal-them-cong-trinh');
+        }
+
+        async function xuLyThemCongTrinh() {
+            let ten = document.getElementById('ct-ten').value;
+            let dg = document.getElementById('ct-dongia').value;
+            
+            let vtList = [];
+            let rows = document.querySelectorAll('#danh-sach-vat-tu-tich-chon > div');
+            rows.forEach(r => {
+                let cb = r.querySelector('.vt-checkbox');
+                let slInput = r.querySelector('.vt-sl-dung');
+                if(cb.checked) {
+                    vtList.push({ vat_tu_id: parseInt(cb.value), so_luong_dung: parseInt(slInput.value || 0) });
                 }
             });
-        }
 
-        // Thợ bấm chấm công (Đã sửa lỗi chữ "llet" thành "let" chuẩn)
-        async function thoChamCongTheoNgay(heSo) {
-            let maCv = document.getElementById('select-ma-cv').value;
-            if(!maCv) { alert("Vui lòng chọn công trình trước khi chấm công!"); return; }
-            
-            let res = await fetch('/api/tho/cham-cong', {
+            if(!ten || !dg) { alert("Vui lòng điền tên dự án và đơn giá!"); return; }
+
+            let res = await fetch('/api/admin/them-cong-trinh', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ he_so_cong: heSo, ma_cv: maCv })
+                body: JSON.stringify({ ten_ct: ten, don_gia: parseFloat(dg), vat_tu_list: vtList })
             });
-            let result = await res.json();
-            alert(result.message);
-        }
-
-        // Admin tạo tài khoản thợ
-        async function xuLyTaoTaiKhoan() {
-            let u = document.getElementById('acc-username').value;
-            let p = document.getElementById('acc-password').value;
-            let f = document.getElementById('acc-fullname').value;
-            let l = document.getElementById('acc-luong').value;
-            
-            if(!u || !p || !f) { alert("Vui lòng điền đủ thông tin tài khoản!"); return; }
-
-            let res = await fetch('/api/admin/tao-tai-khoan', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username: u, password: p, fullname: f, luong_theo_gio: l })
-            });
-            let result = await res.json();
-            alert(result.message);
-            if(result.status === 'success') {
-                dongModal('modal-tao-tai-khoan');
-                document.getElementById('acc-username').value = '';
-                document.getElementById('acc-password').value = '';
-                document.getElementById('acc-fullname').value = '';
-                document.getElementById('acc-luong').value = '';
+            let d = await res.json();
+            alert(d.message);
+            if(data.status === 'success' || d.status === 'success') {
+                dongModal('modal-them-cong-trinh');
+                document.getElementById('ct-ten').value = '';
+                document.getElementById('ct-dongia').value = '';
+                loadHệThống();
             }
         }
 
-        // Admin thêm công trình mới
-        async function xuLyThemCongViec() {
-            let ma = document.getElementById('cv-ma').value;
-            let ten = document.getElementById('cv-ten').value;
-            let bd = document.getElementById('cv-ngay-bd').value;
-            let kt = document.getElementById('cv-ngay-kt').value;
-            let thu = document.getElementById('cv-thu-nhap').value;
+        // Tải danh sách kho vật tư
+        async function loadDanhSachVatTu() {
+            if(USER_ROLE !== 'ADMIN') return;
+            let res = await fetch('/api/admin/danh-sach-vat-tu');
+            listVatTuToanCuc = await res.json();
+            let container = document.getElementById('danh-sach-vat-tu-cards');
+            container.innerHTML = '';
             
-            if(!ma || !ten) { alert("Vui lòng điền Mã và Tên công trình!"); return; }
+            listVatTuToanCuc.forEach(vt => {
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">${vt.ten_vt}</h4>
+                            <p class="text-xs text-slate-400">Giá nhập sỉ: <span class="font-bold text-slate-700">${vt.gia_nhap.toLocaleString()}đ</span></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="${vt.so_luong <= 5 ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'} font-black text-xs px-2.5 py-1 rounded-lg block">TỒN: ${vt.so_luong} tấm</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-            let res = await fetch('/api/admin/them-cong-viec', {
+        // Quản lý lưu các form nhập liệu
+        async function xuLyThemNhanVien() {
+            let data = {
+                fullname: document.getElementById('nv-fullname').value,
+                cong_viec: document.getElementById('nv-congviec').value,
+                luong_co_ban: parseFloat(document.getElementById('nv-luong').value || 0),
+                ngay_chot_luong: parseInt(document.getElementById('nv-ngaychot').value || 30),
+                doanh_so: parseFloat(document.getElementById('nv-doanhso').value || 0),
+                ghi_chu: document.getElementById('nv-ghichu').value
+            };
+            let res = await fetch('/api/admin/them-nhan-vien', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ ma_cv: ma, ten_cv: ten, ngay_bat_dau: bd, ngay_ket_thuc: kt, tong_thu_nhap: thu })
+                body: JSON.stringify(data)
             });
-            let result = await res.json();
-            alert(result.message);
-            if(result.status === 'success') {
-                dongModal('modal-them-cong-viec');
-                await loadDanhSachCongViec();
-                document.getElementById('cv-ma').value = '';
-                document.getElementById('cv-ten').value = '';
-                document.getElementById('cv-thu-nhap').value = '';
+            let d = await res.json();
+            alert(d.message);
+            if(d.status === 'success') { dongModal('modal-them-nhan-vien'); loadHệThống(); }
+        }
+
+        async function xuLyThemVatTu() {
+            let data = {
+                ten_vt: document.getElementById('vt-ten').value,
+                gia_nhap: parseFloat(document.getElementById('vt-gia').value || 0),
+                so_luong: parseInt(document.getElementById('vt-soluong').value || 0)
+            };
+            let res = await fetch('/api/admin/them-vat-tu', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            let d = await res.json();
+            alert(d.message);
+            if(d.status === 'success') { dongModal('modal-them-vat-tu'); loadHệThống(); }
+        }
+
+        async function xoaCongTrinh(id) {
+            if(!confirm("Sếp chắc chắn muốn xóa công trình này? Hệ thống sẽ tự động trả nguyên trạng phôi vật tư về kho sỉ!")) return;
+            let res = await fetch(`/api/admin/xoa-cong-trinh/${id}`, { method: 'DELETE' });
+            let d = await res.json();
+            alert(d.message);
+            loadHệThống();
+        }
+
+        async function xuLyResetThang() {
+            if(!confirm("CẢNH BÁO: Xác nhận chốt lương thanh toán cuối tháng? Hệ thống sẽ sao lưu tiền lương và đưa ngày công của thợ về số 0 để tính tháng mới!")) return;
+            let res = await fetch('/api/admin/reset-thang', { method: 'POST' });
+            let d = await res.json();
+            alert(d.message);
+            loadHệThống();
+        }
+
+        // Tạo tài khoản cho thợ xem lương bảo mật
+        async function loadSelectNhanVienChuaCoTk() {
+            if(USER_ROLE !== 'ADMIN') return;
+            let res = await fetch('/api/admin/danh-sach-nhan-vien-chua-co-tk');
+            let data = await res.json();
+            let select = document.getElementById('tk-nhan-vien-id');
+            select.innerHTML = '<option value="">-- Chọn nhân viên để kết nối tài khoản --</option>';
+            data.forEach(nv => {
+                select.innerHTML += `<option value="${nv.id}">${nv.fullname}</option>`;
+            });
+        }
+
+        async function xuLyCapTaiKhoanTho() {
+            let nvId = document.getElementById('tk-nhan-vien-id').value;
+            let u = document.getElementById('tk-username').value;
+            let p = document.getElementById('tk-password').value;
+            
+            if(!nvId || !u || !p) { alert("Vui lòng điền đầy đủ tài khoản mật khẩu và chọn tên thợ!"); return; }
+
+            let res = await fetch('/api/admin/tao-tai-khoan-tho', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nhan_vien_id: parseInt(nvId), username: u, password: p })
+            });
+            let d = await res.json();
+            alert(d.message);
+            if(d.status === 'success') {
+                document.getElementById('tk-username').value = '';
+                document.getElementById('tk-password').value = '';
+                loadSelectNhanVienChuaCoTk();
             }
         }
 
-        // Tự động tải dữ liệu khi thợ mở trang web xưởng
-        document.addEventListener("DOMContentLoaded", async () => {
-            await loadDanhSachCongViec();
+        // Tự động kích hoạt nạp lõi dữ liệu
+        function loadHệThống() {
+            loadDanhSachTho();
+            loadDanhSachCongTrinh();
+            loadDanhSachVatTu();
+            loadSelectNhanVienChuaCoTk();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if(USER_ROLE) loadHệThống();
         });
     </script>
+    {% endif %}
 </body>
 </html>
