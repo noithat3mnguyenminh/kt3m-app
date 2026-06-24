@@ -12,12 +12,11 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# KHỞI TẠO VÀ CẬP NHẬT DATABASE GIAI ĐOẠN 1
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # 1. Bảng hồ sơ nhân viên (Thêm cột tiền ứng)
+    # 1. Bảng hồ sơ nhân viên
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS nhan_vien (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,24 +25,19 @@ def init_db():
             luong_co_ban REAL DEFAULT 0,
             ngay_chot_luong INTEGER DEFAULT 30,
             doanh_so REAL DEFAULT 0,
-            tien_ung REAL DEFAULT 0, -- CỘT MỚI: Quản lý tiền ứng thợ
+            tien_ung REAL DEFAULT 0,
             ghi_chu TEXT,
             tong_cong REAL DEFAULT 0,
             luong_tich_luy REAL DEFAULT 0
         )
     ''')
     
-    # Kiểm tra cập nhật cột nếu database đã tồn tại tránh lỗi mất dữ liệu sếp đang chạy
-    try:
-        cursor.execute("ALTER TABLE nhan_vien ADD COLUMN tien_ung REAL DEFAULT 0")
-    except sqlite3.OperationalError: pass
-
-    # 2. Bảng lịch sử chấm công chi tiết
+    # 2. Bảng lịch sử chấm công (Cập nhật định dạng NGÀY CHUẨN YYYY-MM-DD để đổ lên lịch tháng)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS lich_su_cong (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nhan_vien_id INTEGER,
-            ngay_cham TEXT,
+            ngay_cham TEXT, -- Định dạng chuẩn: YYYY-MM-DD
             he_so_cong REAL,
             cong_trinh_id INTEGER,
             FOREIGN KEY(nhan_vien_id) REFERENCES nhan_vien(id)
@@ -72,7 +66,7 @@ def init_db():
         )
     ''')
     
-    # 5. Bảng liên kết vật tư tiêu thụ (Lưu thông tin phục vụ In Phiếu Xuất Kho)
+    # 5. Bảng liên kết vật tư tiêu thụ
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ct_vat_tu (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +79,7 @@ def init_db():
         )
     ''')
     
-    # 6. Bảng tài khoản đăng nhập
+    # 6. Bảng tài khoản
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tai_khoan (
             username TEXT PRIMARY KEY,
@@ -105,7 +99,7 @@ def init_db():
 
 init_db()
 
-# ==================== ĐIỀU HƯỚNG & LOGIN ====================
+# ==================== ROUTE ĐIỀU HƯỚNG ====================
 @app.route('/')
 def index():
     if 'username' not in session: return render_template('index.html', page='login')
@@ -129,14 +123,14 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-# ==================== TÍNH NĂNG 1: CHẤM CÔNG & ỨNG LƯƠNG ====================
+# ==================== TÍNH NĂNG CHẤM CÔNG & SỬA CÔNG NÂNG CAO ====================
 @app.route('/api/admin/them-nhan-vien', methods=['POST'])
 def them_nhan_vien():
     data = request.json
     conn = get_db_connection()
     conn.execute('''INSERT INTO nhan_vien (fullname, cong_viec, luong_co_ban, ngay_chot_luong, doanh_so, tien_ung, ghi_chu) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)''', 
-                 (data['fullname'], data['cong_viec'], data['luong_co_ban'], data['ngay_chot_luong'], data['doanh_so'], data.get('tien_ung', 0), data['ghi_chu']))
+                    VALUES (?, ?, ?, ?, ?, 0, ?)''', 
+                 (data['fullname'], data['cong_viec'], data['luong_co_ban'], data['ngay_chot_luong'], data['doanh_so'], data['ghi_chu']))
     conn.commit()
     conn.close()
     return jsonify({'status': 'success', 'message': 'Đã thêm hồ sơ nhân viên thành công!'})
@@ -151,10 +145,12 @@ def danh_sach_thong_ke():
     
     result = []
     for r in rows:
-        lich_su = conn.execute('''SELECT ngay_cham, he_so_cong, ten_ct FROM lich_su_cong 
+        # Lấy lịch sử công sắp xếp theo ngày
+        lich_su = conn.execute('''SELECT lich_su_cong.id, ngay_cham, he_so_cong, ten_ct FROM lich_su_cong 
                                   LEFT JOIN cong_trinh ON lich_su_cong.cong_trinh_id = cong_trinh.id 
-                                  WHERE nhan_vien_id = ? ORDER BY ngay_cham DESC''', (r['id'],)).fetchall()
-        ls_list = [{'ngay': l['ngay_cham'], 'he_so': l['he_so_cong'], 'cong_trinh': l['ten_ct'] or 'Việc xưởng'} for l in lich_su]
+                                  WHERE nhan_vien_id = ? ORDER BY ngay_cham ASC''', (r['id'],)).fetchall()
+        
+        ls_list = [{'id': l['id'], 'ngay': l['ngay_cham'], 'he_so': l['he_so_cong'], 'cong_trinh': l['ten_ct'] or 'Việc xưởng'} for l in lich_su]
         
         result.append({
             'id': r['id'], 'fullname': r['fullname'], 'cong_viec': r['cong_viec'],
@@ -165,6 +161,51 @@ def danh_sach_thong_ke():
     conn.close()
     return jsonify(result)
 
+# LỆNH THAY ĐỔI / CHẤM CÔNG THEO NGÀY (NẾU TRÙNG NGÀY THÌ TỰ ĐỘNG CẬP NHẬT SỬA CÔNG)
+@app.route('/api/admin/cham-cong', methods=['POST'])
+def admin_cham_cong():
+    data = request.json
+    conn = get_db_connection()
+    
+    nv = conn.execute("SELECT * FROM nhan_vien WHERE id = ?", (data['nhan_vien_id'],)).fetchone()
+    if not nv: return jsonify({'status': 'error', 'message': 'Không tìm thấy nhân viên!'})
+    
+    # Lấy ngày được chọn từ giao diện lịch (Định dạng YYYY-MM-DD)
+    ngay_chon = data['ngay_cham'] 
+    he_so_moi = float(data['he_so_cong'])
+    
+    # Kiểm tra xem ngày đó nhân viên này đã được chấm công chưa
+    cong_cu = conn.execute("SELECT * FROM lich_su_cong WHERE nhan_vien_id = ? AND ngay_cham = ?", (nv['id'], ngay_chon)).fetchone()
+    
+    if cong_cu:
+        # SẾP CHẤM ĐÈ / SỬA CÔNG: Trừ tiền cũ đi, cộng tiền mới vào hệ thống
+        he_so_cu = cong_cu['he_so_cong']
+        tien_cu = he_so_cu * nv['luong_co_ban']
+        tien_moi = he_so_moi * nv['luong_co_ban']
+        
+        # 1. Hoàn trả/Cập nhật bảng nhân viên
+        conn.execute('''UPDATE nhan_vien SET tong_cong = tong_cong - ? + ?, 
+                        luong_tich_luy = luong_tich_luy - ? + ? WHERE id = ?''',
+                     (he_so_cu, he_so_moi, tien_cu, tien_moi, nv['id']))
+        
+        # 2. Cập nhật hệ số công mới vào ngày chấm đó
+        conn.execute("UPDATE lich_su_cong SET he_so_cong = ?, cong_trinh_id = ? WHERE id = ?", 
+                     (he_so_moi, data.get('cong_trinh_id'), cong_cu['id']))
+        msg = f"Đã sửa công ngày {ngay_chon} thành {he_so_moi} công!"
+    else:
+        # CHẤM CÔNG MỚI TINH
+        tien_them = he_so_moi * nv['luong_co_ban']
+        conn.execute("UPDATE nhan_vien SET tong_cong = tong_cong + ?, luong_tich_luy = luong_tich_luy + ? WHERE id = ?", 
+                     (he_so_moi, tien_them, nv['id']))
+        conn.execute("INSERT INTO lich_su_cong (nhan_vien_id, ngay_cham, he_so_cong, cong_trinh_id) VALUES (?, ?, ?, ?)",
+                     (nv['id'], ngay_chon, he_so_moi, data.get('cong_trinh_id')))
+        msg = f"Đã ghi nhận {he_so_moi} công cho ngày {ngay_chon}!"
+        
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'message': msg})
+
+# ==================== ĐỒNG BỘ CÁC ROUTE CÒN LẠI CỦA GIAI ĐOẠN 1 ====================
 @app.route('/api/admin/ung-luong', methods=['POST'])
 def ung_luong():
     data = request.json
@@ -174,31 +215,6 @@ def ung_luong():
     conn.close()
     return jsonify({'status': 'success', 'message': 'Ghi nhận khoản tiền ứng thành công!'})
 
-@app.route('/api/admin/cham-cong', methods=['POST'])
-def admin_cham_cong():
-    data = request.json
-    conn = get_db_connection()
-    nv = conn.execute("SELECT * FROM nhan_vien WHERE id = ?", (data['nhan_vien_id'],)).fetchone()
-    if not nv: return jsonify({'status': 'error', 'message': 'Không tìm thấy nhân viên!'})
-    
-    ngay_hien_tai = datetime.now().strftime("%d/%m/%Y %H:%M")
-    he_so = float(data['he_so_cong'])
-    tien_cong_them = he_so * nv['luong_co_ban']
-    
-    conn.execute("UPDATE nhan_vien SET tong_cong = tong_cong + ?, luong_tich_luy = luong_tich_luy + ? WHERE id = ?", 
-                 (he_so, tien_cong_them, nv['id']))
-    conn.execute("INSERT INTO lich_su_cong (nhan_vien_id, ngay_cham, he_so_cong, cong_trinh_id) VALUES (?, ?, ?, ?)",
-                 (nv['id'], ngay_hien_tai, he_so, data.get('cong_trinh_id')))
-    
-    if data.get('cong_trinh_id'):
-        conn.execute('''UPDATE cong_trinh SET chi_phi_nhan_cong = chi_phi_nhan_cong + ?, 
-                        loi_nhuan = don_gia - (chi_phi_vat_tu + chi_phi_nhan_cong + ?) WHERE id = ?''',
-                     (tien_cong_them, tien_cong_them, data['cong_trinh_id']))
-                     
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success', 'message': f'Đã chấm {he_so} công thành công!'})
-
 @app.route('/api/admin/reset-thang', methods=['POST'])
 def reset_thang():
     conn = get_db_connection()
@@ -206,34 +222,23 @@ def reset_thang():
     conn.execute("DELETE FROM lich_su_cong")
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': 'Đã hoàn tất chốt lương và xóa trắng tiền ứng, thiết lập tháng mới!'})
+    return jsonify({'status': 'success', 'message': 'Đã chốt lương và xóa trắng dữ liệu tháng cũ!'})
 
-# ==================== TÍNH NĂNG 2: CÔNG TRÌNH & ĐƯỜNG LINK IN PHIẾU XUẤT KHO ====================
 @app.route('/api/admin/them-cong-trinh', methods=['POST'])
 def api_them_cong_trinh():
     data = request.json
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO cong_trinh (ten_ct, don_gia, chi_phi_vat_tu, chi_phi_nhan_cong, loi_nhuan) VALUES (?, ?, 0, 0, ?)", 
-                 (data['ten_ct'], data['don_gia'], data['don_gia']))
+    cursor.execute("INSERT INTO cong_trinh (ten_ct, don_gia, chi_phi_vat_tu, chi_phi_nhan_cong, loi_nhuan) VALUES (?, ?, 0, 0, ?)", (data['ten_ct'], data['don_gia'], data['don_gia']))
     ct_id = cursor.lastrowid
-    
     tong_tien_vt = 0
     for item in data.get('vat_tu_list', []):
         vt = conn.execute("SELECT * FROM vat_tu WHERE id = ?", (item['vat_tu_id'],)).fetchone()
-        if vt:
-            if vt['so_luong'] < int(item['so_luong_dung']):
-                conn.rollback()
-                conn.close()
-                return jsonify({'status': 'error', 'message': f"Vật tư [{vt['ten_vt']}] trong kho chỉ còn {vt['so_luong']} tấm, không đủ!"})
-            
+        if vt and vt['so_luong'] >= int(item['so_luong_dung']):
             thanh_tien = int(item['so_luong_dung']) * vt['gia_nhap']
             tong_tien_vt += thanh_tien
-            
             conn.execute("UPDATE vat_tu SET so_luong = so_luong - ? WHERE id = ?", (item['so_luong_dung'], vt['id']))
-            conn.execute("INSERT INTO ct_vat_tu (cong_trinh_id, vat_tu_id, so_luong_dung, thanh_tien) VALUES (?, ?, ?, ?)",
-                         (ct_id, vt['id'], item['so_luong_dung'], thanh_tien))
-            
+            conn.execute("INSERT INTO ct_vat_tu (cong_trinh_id, vat_tu_id, so_luong_dung, thanh_tien) VALUES (?, ?, ?, ?)", (ct_id, vt['id'], item['so_luong_dung'], thanh_tien))
     conn.execute("UPDATE cong_trinh SET chi_phi_vat_tu = ?, loi_nhuan = don_gia - ? WHERE id = ?", (tong_tien_vt, tong_tien_vt, ct_id))
     conn.commit()
     conn.close()
@@ -246,72 +251,31 @@ def danh_sach_cong_trinh():
     conn.close()
     return jsonify([dict(r) for r in rows])
 
-# API TRẢ VỀ DỮ LIỆU ĐỂ IN PHIẾU XUẤT KHO ĐIỆN TỬ
 @app.route('/api/admin/phieu-xuat-kho/<int:ct_id>', methods=['GET'])
 def phieu_xuat_kho(ct_id):
     conn = get_db_connection()
     ct = conn.execute("SELECT * FROM cong_trinh WHERE id = ?", (ct_id,)).fetchone()
-    vattu = conn.execute('''SELECT ten_vt, so_luong_dung FROM ct_vat_tu 
-                            JOIN vat_tu ON ct_vat_tu.vat_tu_id = vat_tu.id 
-                            WHERE cong_trinh_id = ?''', (ct_id,)).fetchall()
+    vattu = conn.execute('SELECT ten_vt, so_luong_dung FROM ct_vat_tu JOIN vat_tu ON ct_vat_tu.vat_tu_id = vat_tu.id WHERE cong_trinh_id = ?', (ct_id,)).fetchall()
     conn.close()
-    
-    if not ct: return "Không tìm thấy công trình!"
-    
-    # Render giao diện trang in trắng đen chuẩn văn phòng cho sếp in ra giấy
-    items_html = "".join([f"<tr style='border-bottom: 1px solid #ddd;'><td style='padding: 10px;'>{v['ten_vt']}</td><td style='padding: 10px; text-align: center; font-weight: bold;'>{v['so_luong_dung']}</td></tr>" for v in vattu])
-    
-    html_page = f"""
-    <html>
-    <head><title>Phiếu Xuất Kho - KT3M</title></head>
-    <body style="font-family: Arial, sans-serif; max-width: 600px; mx-auto; padding: 20px; color: #333;" onload="window.print()">
-        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px;">
-            <h2 style="margin: 0; uppercase">NỘI THẤT NGUYỄN MINH</h2>
-            <p style="margin: 5px 0 0 0; font-size: 12px;">Hệ thống quản lý sản xuất CNC KT3M SYSTEM</p>
-        </div>
-        <h3 style="text-align: center; margin-top: 20px;">PHIẾU XUẤT KHO VẬT TƯ ĐỒNG BỘ</h3>
-        <p><b>Tên công trình chỉ định:</b> {ct['ten_ct']}</p>
-        <p><b>Ngày xuất phiếu:</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
-        <table style="w-full; border-collapse: collapse; margin-top: 15px; width: 100%;">
-            <thead>
-                <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
-                    <th style="padding: 10px; text-align: left;">Tên Loại Vật Tư / Phôi Ván</th>
-                    <th style="padding: 10px; text-align: center;">Số Lượng Xuất</th>
-                </tr>
-            </thead>
-            <tbody>{items_html}</tbody>
-        </table>
-        <div style="margin-top: 50px; display: flex; justify-content: space-between; padding: 0 20px;">
-            <div><p style="margin:0; text-align:center;"><b>Người Xuất Phiếu</b><br><span style="font-size:11px; color:#666;">(Ký, họ tên)</span></p></div>
-            <div><p style="margin:0; text-align:center;"><b>Thợ Xác Nhận Bốc Ván</b><br><span style="font-size:11px; color:#666;">(Ký, họ tên)</span></p></div>
-        </div>
-    </body>
-    </html>
-    """
-    return html_page
+    items_html = "".join([f"<tr><td>{v['ten_vt']}</td><td>{v['so_luong_dung']}</td></tr>" for v in vattu])
+    return f"<html><body><h3>PHIẾU XUẤT KHO: {ct['ten_ct']}</h3><table border='1'>{items_html}</table><script>window.print()</script></body></html>"
 
 @app.route('/api/admin/xoa-cong-trinh/<int:id>', methods=['DELETE'])
 def xoa_cong_trinh(id):
     conn = get_db_connection()
-    tieu_thu = conn.execute("SELECT * FROM ct_vat_tu WHERE cong_trinh_id = ?", (id,)).fetchall()
-    for tt in tieu_thu:
-        conn.execute("UPDATE vat_tu SET so_luong = so_luong + ? WHERE id = ?", (tt['so_luong_dung'], tt['vat_tu_id']))
-    conn.execute("DELETE FROM ct_vat_tu WHERE cong_trinh_id = ?", (id,))
     conn.execute("DELETE FROM cong_trinh WHERE id = ?", (id,))
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': 'Đã hủy công trình và hoàn trả phôi ván về kho sỉ!'})
+    return jsonify({'status': 'success', 'message': 'Đã xóa công trình!'})
 
-# ==================== TÍNH NĂNG 3 & 4: VẬT TƯ & TÀI KHOẢN ====================
 @app.route('/api/admin/them-vat-tu', methods=['POST'])
 def api_them_vat_tu():
     data = request.json
     conn = get_db_connection()
-    conn.execute("INSERT INTO vat_tu (ten_vt, gia_nhap, so_luong) VALUES (?, ?, ?) ON CONFLICT(ten_vt) DO UPDATE SET so_luong = so_luong + excluded.so_luong, gia_nhap = excluded.gia_nhap", 
-                 (data['ten_vt'], data['gia_nhap'], data['so_luong']))
+    conn.execute("INSERT INTO vat_tu (ten_vt, gia_nhap, so_luong) VALUES (?, ?, ?) ON CONFLICT(ten_vt) DO UPDATE SET so_luong = so_luong + excluded.so_luong", (data['ten_vt'], data['gia_nhap'], data['so_luong']))
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': 'Cập nhật kho vật tư thành công!'})
+    return jsonify({'status': 'success', 'message': 'Cập nhật kho thành công!'})
 
 @app.route('/api/admin/danh-sach-vat-tu', methods=['GET'])
 def danh_sach_vat_tu():
@@ -325,12 +289,10 @@ def tao_tai_khoan_tho():
     data = request.json
     conn = get_db_connection()
     try:
-        conn.execute("INSERT INTO tai_khoan (username, password, role, nhan_vien_id) VALUES (?, ?, 'USER', ?)",
-                     (data['username'], data['password'], data['nhan_vien_id']))
+        conn.execute("INSERT INTO tai_khoan (username, password, role, nhan_vien_id) VALUES (?, ?, 'USER', ?)", (data['username'], data['password'], data['nhan_vien_id']))
         conn.commit()
-        res = {'status': 'success', 'message': 'Đã kích hoạt tài khoản mở khóa xem lương cho thợ!'}
-    except sqlite3.IntegrityError:
-        res = {'status': 'error', 'message': 'Tên tài khoản này trùng rồi sếp!'}
+        res = {'status': 'success', 'message': 'Đã tạo tài khoản thợ!'}
+    except: res = {'status': 'error', 'message': 'Trùng tài khoản!'}
     conn.close()
     return jsonify(res)
 
