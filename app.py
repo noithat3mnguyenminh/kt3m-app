@@ -15,7 +15,6 @@ def call_gs(action, table, values=None, id=None, updates=None):
         return res.json()
     except: return []
 
-# ==================== CÁC ROUTE GIAO DIỆN ====================
 @app.route('/')
 def index():
     if 'username' not in session: return render_template('index.html', page='login')
@@ -33,19 +32,16 @@ def api_login():
         return jsonify({'status': 'success'})
     return jsonify({'status': 'error', 'message': 'Sai tài khoản sếp ơi!'})
 
-# ==================== TÍNH NĂNG CHẤM CÔNG (Ví dụ mẫu) ====================
+@app.route('/api/admin/danh-sach-thong-ke', methods=['GET'])
+def danh_sach_thong_ke():
+    nv_list = call_gs("read", "nhan_vien")
+    return jsonify(nv_list)
+
 @app.route('/api/admin/cham-cong', methods=['POST'])
 def admin_cham_cong():
     data = request.json
-    # Ghi vào bảng lich_su_cong trong Google Sheets
     call_gs("insert", "lich_su_cong", [None, data['nhan_vien_id'], data['ngay_cham'], data['he_so_cong'], data.get('cong_trinh_id')])
-    return jsonify({'status': 'success', 'message': 'Đã lưu lên mây thành công!'})
-
-@app.route('/api/admin/danh-sach-thong-ke', methods=['GET'])
-def danh_sach_thong_ke():
-    # Đọc dữ liệu từ Google Sheets thay vì SQLite
-    nv_list = call_gs("read", "nhan_vien")
-    return jsonify(nv_list)
+    return jsonify({'status': 'success', 'message': 'Đã ghi nhận công!'})
 
 @app.route('/logout')
 def logout():
@@ -53,4 +49,4 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run()
