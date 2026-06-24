@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'noithatnguyenminh_key'
 
 # Link Google Sheet của sếp
-GS_URL = "https://script.google.com/macros/s/AKfycbyfD0j2J82v8yV-Dq4P32qU4N89NlF6Vw8m4h2jR8S4/exec"
+GS_URL = "https://script.google.com/macros/s/AKfycbyFGDCREsU8kCLSUg8a_6r1F8Uloq1Xfp3kJcZnnBR5zW483aBnAEhwZ0q1MF-0xzo/exec"
 
 def call_gs(action, table, values=None, id=None, updates=None):
     data = {"action": action, "table": table, "values": values, "id": id, "updates": updates}
