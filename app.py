@@ -5,10 +5,21 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 app = Flask(__name__)
 app.secret_key = 'noithatnguyenminh_key_bi_mat'
 
-# --- KẾT NỐI KÉT SẮT SUPABASE ---
-DATABASE_URL = "postgresql+psycopg2://postgres:Noithatnguyenminh%40123@db.wrixjmydm.supabase.co:5432/postgres"
+import os
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import scoped_session, sessionmaker
+
+app = Flask(__name__)
+app.secret_key = 'noithatnguyenminh_key_bi_mat'
+
+# Lấy địa chỉ két sắt từ cấu hình bảo mật của Render
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 engine = create_engine(DATABASE_URL)
 db = scoped_session(sessionmaker(bind=engine))
+
+# ... (Phần logic khởi tạo bảng và các route giữ nguyên như cũ)
 
 # Hàm khởi tạo bảng (chạy 1 lần duy nhất)
 def init_db():
