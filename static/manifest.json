@@ -1,5 +1,5 @@
 {
-  "name": "KT3M SYSTEM - Nội Thất",
+  "name": "KT3M SYSTEM",
   "short_name": "KT3M App",
   "description": "Phần mềm quản lý xưởng Nội Thất Nguyễn Minh",
   "start_url": "/",
@@ -8,12 +8,12 @@
   "theme_color": "#10b981",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "/static/logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "logo.png",
+      "src": "/static/logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
