@@ -1,26 +1,61 @@
+from flask import Flask, render_template, request, jsonify, session
+import requests, json, os
+
+app = Flask(__name__)
+app.secret_key = 'noithatnguyenminh_key'
+
+# Lấy URL từ biến môi trường trên Render
+GS_URL = os.environ.get("GS_URL")
+
+def call_gs(action, table, **kwargs):
+    if not GS_URL: return []
+    try:
+        res = requests.post(GS_URL, data=json.dumps({"action": action, "table": table, **kwargs}), timeout=15)
+        return res.json()
+    except: return []
+
+@app.route('/')
+def index():
+    if 'username' not in session: return render_template('index.html', page='login')
+    return render_template('index.html', page='main', user=session)
+
 @app.route('/api/login', methods=['POST'])
 def api_login():
     data = request.json
+    username_input = str(data.get('username', '')).strip().lower()
+    password_input = str(data.get('password', '')).strip()
+    
     users = call_gs("read", "tai_khoan")
     
     if not isinstance(users, list):
-        return jsonify({'status': 'error', 'message': 'Lỗi kết nối dữ liệu'})
+        return jsonify({'status': 'error', 'message': 'Lỗi kết nối dữ liệu từ Sheet'})
         
-    user = None
-    # Sửa logic: Tìm ưu tiên dòng nào có role là 'admin' trước
+    found_user = None
+    # Ưu tiên tìm tài khoản có role là admin nếu trùng lặp username
     for u in users:
-        if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
-           str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
-            # Nếu tìm thấy user, kiểm tra role
+        u_name = str(u.get('username', '')).strip().lower()
+        u_pass = str(u.get('password', '')).strip()
+        
+        if u_name == username_input and u_pass == password_input:
+            # Nếu là admin thì nhận ngay, không cần tìm tiếp
             if str(u.get('role', '')).strip().lower() == 'admin':
-                user = u
-                break # Ưu tiên admin thì dừng luôn
+                found_user = u
+                break
             else:
-                user = u # Nếu là thợ thì lưu lại nhưng chưa dừng (để xem có dòng admin nào khác không)
+                found_user = u # Lưu lại thợ, nhưng tiếp tục tìm xem có dòng nào là admin không
             
-    if user:
-        session['username'] = user['username']
-        session['role'] = user.get('role', 'tho') # Mặc định là thợ nếu không có cột role
+    if found_user:
+        session['username'] = found_user.get('username')
+        session['role'] = found_user.get('role', 'tho')
         return jsonify({'status': 'success'})
     
     return jsonify({'status': 'error', 'message': 'Sai tài khoản hoặc mật khẩu!'})
+
+# Đường dẫn debug: Dán link này vào trình duyệt để xem dữ liệu web đang lấy được gì
+@app.route('/api/debug_data', methods=['GET'])
+def debug_data():
+    users = call_gs("read", "tai_khoan")
+    return jsonify({'data': users})
+
+if __name__ == '__main__':
+    app.run()
