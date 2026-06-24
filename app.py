@@ -5,7 +5,38 @@ import os
 
 app = Flask(__name__)
 app.secret_key = 'noithatnguyenminh_key_bi_mat'
-DB_FILE = 'quan_ly_xuong.db'
+from flask import Flask, render_template, request, jsonify, session
+import requests
+import json
+
+app = Flask(__name__)
+app.secret_key = 'noithatnguyenminh_key'
+
+# Dán link Web App URL của sếp vào đây
+GS_URL = "https://script.google.com/macros/s/AKfycbyfD0j2J82v8yV-Dq4P32qU4N89NlF6Vw8m4h2jR8S4/exec"
+
+def call_gs(action, table, values=None):
+    data = {"action": action, "table": table, "values": values}
+    try:
+        res = requests.post(GS_URL, data=json.dumps(data), timeout=10)
+        return res.json()
+    except:
+        return []
+
+@app.route('/')
+def index():
+    return "Hệ thống NT3M đã kết nối Google Sheets thành công!"
+
+# Ví dụ API chấm công, sếp dán vào các hàm tương ứng của sếp
+@app.route('/api/cham-cong', methods=['POST'])
+def cham_cong():
+    data = request.json
+    # Lưu vào Sheet 'lich_su_cong'
+    call_gs("insert", "lich_su_cong", [None, data['nhan_vien_id'], data['ngay_cham'], data['he_so_cong'], data['cong_trinh_id']])
+    return jsonify({'status': 'success'})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
 
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
