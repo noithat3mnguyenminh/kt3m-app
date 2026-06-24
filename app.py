@@ -21,19 +21,24 @@ def api_login():
     data = request.json
     users = call_gs("read", "tai_khoan")
     
-    # In ra log để sếp kiểm tra
-    print(f"DEBUG: Dữ liệu nhận từ Sheet: {users}")
-    print(f"DEBUG: Dữ liệu sếp nhập: {data}")
+    # In ra tất cả danh sách user để sếp kiểm tra trong Logs
+    print(f"Danh sách từ Sheet: {users}") 
     
-    user = next((u for u in users if str(u.get('username')).strip() == str(data.get('username')).strip() 
-                 and str(u.get('password')).strip() == str(data.get('password')).strip()), None)
-    
+    # So sánh kỹ hơn
+    user = None
+    for u in users:
+        # Ép tất cả về dạng chữ (str) để so sánh cho chắc chắn
+        if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
+           str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
+            user = u
+            break
+            
     if user:
         session['username'] = user['username']
         session['role'] = user['role']
         return jsonify({'status': 'success'})
-    return jsonify({'status': 'error', 'message': f'Dữ liệu Sheet đang đọc là: {users[:1]}...'})
-@app.route('/api/debug_login', methods=['POST'])
+    
+    return jsonify({'status': 'error', 'message': 'Không tìm thấy tài khoản này trong hệ thống!'})
 def debug_login():
     data = request.json
     users = call_gs("read", "tai_khoan")
