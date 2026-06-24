@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'noithatnguyenminh_key_bi_mat'
 
 # --- KẾT NỐI KÉT SẮT SUPABASE ---
-DATABASE_URL = postgresql://postgres:Noithatnguyenminh%40123@db.wrixjmydmiglullshmxr.supabase.co:5432/postgres
+DATABASE_URL = "postgresql://postgres:Noithatnguyenminh%40123@db.wrixjmydmiglullshmxr.supabase.co:5432/postgres"
 engine = create_engine(DATABASE_URL)
 db = scoped_session(sessionmaker(bind=engine))
 
