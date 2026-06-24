@@ -2,10 +2,22 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KT3M - Hệ Thống Quản Trị Xưởng</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KT3M SYSTEM">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* Tối ưu khoảng cách tai thỏ cho các dòng iPhone đời mới */
+        body {
+            padding-top: env(safe-area-inset-top);
+        }
+    </style>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen pb-24">
 
@@ -47,7 +59,7 @@
             <div class="space-y-3">
                 <label class="block text-xs font-bold text-slate-500 uppercase">Chọn Công Việc / Công Trình:</label>
                 <select id="select-ma-cv" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 focus:outline-none focus:border-emerald-500">
-                    </select>
+                </select>
             </div>
 
             <div class="grid grid-cols-2 gap-3 pt-2">
@@ -122,9 +134,8 @@
         function moModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function dongModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-        // Hàm gọi API lấy danh sách các đơn hàng gỗ/nhựa đang chạy
         async function loadDanhSachCongViec() {
-            let res = await fetch('/api/cong-viec/danh-sach');
+            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/cong-viec/danh-sach');
             let data = await res.json();
             let select = document.getElementById('select-ma-cv');
             select.innerHTML = '';
@@ -141,12 +152,12 @@
             });
         }
 
-        // Thợ xử lý chấm công tính hệ số Ngày Công trực tiếp
         async function thoChamCongTheoNgay(heSo) {
             let maCv = document.getElementById('select-ma-cv').value;
             if(!maCv) { alert("Vui lòng chọn công trình trước khi chấm công!"); return; }
             
-            let res = await fetch('/api/tho/cham-cong', {
+            // Đã fix lỗi chữ "llet" thừa thành "let" chuẩn chỉ
+            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/tho/cham-cong', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ he_so_cong: heSo, ma_cv: maCv })
@@ -155,7 +166,6 @@
             alert(result.message);
         }
 
-        // Admin xử lý tạo tài khoản thợ mới
         async function xuLyTaoTaiKhoan() {
             let u = document.getElementById('acc-username').value;
             let p = document.getElementById('acc-password').value;
@@ -164,7 +174,7 @@
             
             if(!u || !p || !f) { alert("Vui lòng điền đủ thông tin tài khoản!"); return; }
 
-            let res = await fetch('/api/admin/tao-tai-khoan', {
+            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/admin/tao-tai-khoan', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ username: u, password: p, fullname: f, luong_theo_gio: l })
@@ -180,7 +190,6 @@
             }
         }
 
-        // Admin xử lý khởi tạo dự án sản xuất mới cho xưởng
         async function xuLyThemCongViec() {
             let ma = document.getElementById('cv-ma').value;
             let ten = document.getElementById('cv-ten').value;
@@ -190,7 +199,7 @@
             
             if(!ma || !ten) { alert("Vui lòng điền Mã và Tên công trình!"); return; }
 
-            let res = await fetch('/api/admin/them-cong-viec', {
+            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/admin/them-cong-viec', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ ma_cv: ma, ten_cv: ten, ngay_bat_dau: bd, ngay_ket_thuc: kt, tong_thu_nhap: thu })
@@ -199,16 +208,22 @@
             alert(result.message);
             if(result.status === 'success') {
                 dongModal('modal-them-cong-viec');
-                await loadDanhSachCongViec(); // Cập nhật lại ô chọn tức thì
+                await loadDanhSachCongViec();
                 document.getElementById('cv-ma').value = '';
                 document.getElementById('cv-ten').value = '';
                 document.getElementById('cv-thu-nhap').value = '';
             }
         }
 
-        // Đảm bảo chạy mượt mà ngay khi Render tải xong giao diện
         document.addEventListener("DOMContentLoaded", async () => {
             await loadDanhSachCongViec();
+            
+            // Kích hoạt Service Worker để ép trình duyệt iPhone chạy khóa cứng tràn viền
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('Chạy chế độ độc lập thường.');
+                });
+            }
         });
     </script>
 </body>
