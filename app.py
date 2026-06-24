@@ -3,7 +3,7 @@ import requests, json
 
 app = Flask(__name__)
 app.secret_key = 'noithatnguyenminh_key'
-GS_URL = "https://script.google.com/macros/s/AKfycbym60J9k8DNFUkaxY_yf5VewVPGr2Y-P-aVkwaJmWFEkrfBsHOyIVZJOZySjfV9WHTT/exec"
+GS_URL = "https://script.google.com/macros/s/AKfycbxhInRrtKUm0gLwDuAjOIPwOUQbfkPLe9vkzo6358aaopKy1a7VokHG2HksJm6nyS7f/exec"
 
 def call_gs(action, table, **kwargs):
     try:
