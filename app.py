@@ -14,19 +14,33 @@ def call_gs(action, table, **kwargs):
         return res.json()
     except: return []
 
-@app.route('/')
-def index():
-    # Nếu chưa đăng nhập thì bắt vào login
-    if 'username' not in session: 
-        return render_template('index.html', page='login')
-    
-    # Kiểm tra quyền nếu là admin thì mới cho vào trang quản lý
-    if session.get('role') == 'admin':
-        return render_template('index.html', page='admin_main', user=session)
-    
-    # Nếu là thợ thì vào trang thợ
-    return render_template('index.html', page='main', user=session)
 @app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
+    username_input = str(data.get('username', '')).strip().lower()
+    password_input = str(data.get('password', '')).strip()
+    
+    users = call_gs("read", "tai_khoan")
+    
+    if not isinstance(users, list):
+        return jsonify({'status': 'error', 'message': 'Lỗi kết nối'})
+        
+    found_user = None
+    for u in users:
+        u_name = str(u.get('username', '')).strip().lower()
+        u_pass = str(u.get('password', '')).strip()
+        
+        # Chỉ xét những dòng có username (bỏ qua dòng trống)
+        if u_name and u_name == username_input and u_pass == password_input:
+            found_user = u
+            break # Tìm thấy là chốt ngay
+            
+    if found_user:
+        session['username'] = found_user.get('username')
+        session['role'] = found_user.get('role', 'tho')
+        return jsonify({'status': 'success'})
+    
+    return jsonify({'status': 'error', 'message': 'Sai tài khoản hoặc mật khẩu!'})
 def api_login():
     data = request.json
     username_input = str(data.get('username', '')).strip().lower()
