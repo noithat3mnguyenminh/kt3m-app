@@ -30,12 +30,11 @@ def api_login():
         
     user = None
     for u in users:
-        # Kiểm tra u phải là dictionary
-        if isinstance(u, dict):
-            if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
-               str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
-                user = u
-                break
+        # So sánh chữ thường để tránh lỗi hoa/thường
+        if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
+           str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
+            user = u
+            break
             
     if user:
         session['username'] = user['username']
