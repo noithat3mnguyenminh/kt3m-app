@@ -20,13 +20,19 @@ def index():
 def api_login():
     data = request.json
     users = call_gs("read", "tai_khoan")
+    
+    # In ra log để sếp kiểm tra
+    print(f"DEBUG: Dữ liệu nhận từ Sheet: {users}")
+    print(f"DEBUG: Dữ liệu sếp nhập: {data}")
+    
     user = next((u for u in users if str(u.get('username')).strip() == str(data.get('username')).strip() 
                  and str(u.get('password')).strip() == str(data.get('password')).strip()), None)
+    
     if user:
         session['username'] = user['username']
         session['role'] = user['role']
         return jsonify({'status': 'success'})
-    return jsonify({'status': 'error', 'message': 'Sai tài khoản hoặc mật khẩu!'})
+    return jsonify({'status': 'error', 'message': f'Dữ liệu Sheet đang đọc là: {users[:1]}...'})
 @app.route('/api/debug_login', methods=['POST'])
 def debug_login():
     data = request.json
