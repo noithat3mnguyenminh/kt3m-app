@@ -2,22 +2,10 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KT3M - Hệ Thống Quản Trị Xưởng</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="KT3M SYSTEM">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <style>
-        /* Tối ưu khoảng cách tai thỏ cho các dòng iPhone đời mới */
-        body {
-            padding-top: env(safe-area-inset-top);
-        }
-    </style>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen pb-24">
 
@@ -29,7 +17,7 @@
             </div>
             <a href="/logout" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
                 <i class="fa-solid fa-right-from-bracket"></i>
-            </a>
+            </button>
         </div>
     </header>
 
@@ -134,8 +122,9 @@
         function moModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function dongModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+        // Tải danh sách công trình đang chạy
         async function loadDanhSachCongViec() {
-            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/cong-viec/danh-sach');
+            let res = await fetch('/api/cong-viec/danh-sach');
             let data = await res.json();
             let select = document.getElementById('select-ma-cv');
             select.innerHTML = '';
@@ -152,12 +141,12 @@
             });
         }
 
+        // Thợ bấm chấm công (Đã sửa lỗi chữ "llet" thành "let" chuẩn)
         async function thoChamCongTheoNgay(heSo) {
             let maCv = document.getElementById('select-ma-cv').value;
             if(!maCv) { alert("Vui lòng chọn công trình trước khi chấm công!"); return; }
             
-            // Đã fix lỗi chữ "llet" thừa thành "let" chuẩn chỉ
-            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/tho/cham-cong', {
+            let res = await fetch('/api/tho/cham-cong', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ he_so_cong: heSo, ma_cv: maCv })
@@ -166,6 +155,7 @@
             alert(result.message);
         }
 
+        // Admin tạo tài khoản thợ
         async function xuLyTaoTaiKhoan() {
             let u = document.getElementById('acc-username').value;
             let p = document.getElementById('acc-password').value;
@@ -174,7 +164,7 @@
             
             if(!u || !p || !f) { alert("Vui lòng điền đủ thông tin tài khoản!"); return; }
 
-            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/admin/tao-tai-khoan', {
+            let res = await fetch('/api/admin/tao-tai-khoan', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ username: u, password: p, fullname: f, luong_theo_gio: l })
@@ -190,6 +180,7 @@
             }
         }
 
+        // Admin thêm công trình mới
         async function xuLyThemCongViec() {
             let ma = document.getElementById('cv-ma').value;
             let ten = document.getElementById('cv-ten').value;
@@ -199,7 +190,7 @@
             
             if(!ma || !ten) { alert("Vui lòng điền Mã và Tên công trình!"); return; }
 
-            let res = await fetch('https://kt3m-nguyenminh.onrender.com/api/admin/them-cong-viec', {
+            let res = await fetch('/api/admin/them-cong-viec', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ ma_cv: ma, ten_cv: ten, ngay_bat_dau: bd, ngay_ket_thuc: kt, tong_thu_nhap: thu })
@@ -215,15 +206,9 @@
             }
         }
 
+        // Tự động tải dữ liệu khi thợ mở trang web xưởng
         document.addEventListener("DOMContentLoaded", async () => {
             await loadDanhSachCongViec();
-            
-            // Kích hoạt Service Worker để ép trình duyệt iPhone chạy khóa cứng tràn viền
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                    console.log('Chạy chế độ độc lập thường.');
-                });
-            }
         });
     </script>
 </body>
