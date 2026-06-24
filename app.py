@@ -27,6 +27,10 @@ def api_login():
         session['role'] = user['role']
         return jsonify({'status': 'success'})
     return jsonify({'status': 'error', 'message': 'Sai tài khoản hoặc mật khẩu!'})
-
+@app.route('/api/debug_login', methods=['POST'])
+def debug_login():
+    data = request.json
+    users = call_gs("read", "tai_khoan")
+    return jsonify({'dữ_liệu_lấy_được': users, 'sếp_nhập_vào': data})
 if __name__ == '__main__':
     app.run()
