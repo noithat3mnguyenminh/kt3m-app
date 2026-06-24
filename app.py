@@ -16,8 +16,17 @@ def call_gs(action, table, **kwargs):
 
 @app.route('/')
 def index():
-    if 'username' not in session: return render_template('index.html', page='login')
+    # Kiểm tra xem có session không
+    if 'username' not in session:
+        return render_template('index.html', page='login')
+    # Nếu đã đăng nhập, hiển thị trang tương ứng với role
     return render_template('index.html', page='main', user=session)
+
+# Thêm cái này để bảo vệ các trang khác (nếu có)
+@app.before_request
+def restrict_access():
+    if request.endpoint and request.endpoint != 'index' and request.endpoint != 'api_login' and 'username' not in session:
+        return render_template('index.html', page='login')
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
