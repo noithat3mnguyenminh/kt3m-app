@@ -3,7 +3,9 @@ import requests, json
 
 app = Flask(__name__)
 app.secret_key = 'noithatnguyenminh_key'
-GS_URL = "https://script.google.com/macros/s/AKfycbxhInRrtKUm0gLwDuAjOIPwOUQbfkPLe9vkzo6358aaopKy1a7VokHG2HksJm6nyS7f/exec"
+import os
+# Lấy URL từ biến môi trường sếp vừa tạo trên Render
+GS_URL = os.environ.get("GS_URL")
 
 def call_gs(action, table, **kwargs):
     try:
