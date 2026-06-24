@@ -302,6 +302,18 @@ def nv_chua_co_tk():
     rows = conn.execute("SELECT id, fullname FROM nhan_vien WHERE id NOT IN (SELECT nhan_vien_id FROM tai_khoan WHERE nhan_vien_id IS NOT NULL)").fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
-
+# API XÓA NHÂN VIÊN VÀ CÁC DỮ LIỆU LIÊN QUAN TRÁNH RÁC DATABASE
+@app.route('/api/admin/xoa-nhan-vien/<int:nv_id>', methods=['DELETE'])
+def xoa_nhan_vien(nv_id):
+    conn = get_db_connection()
+    # 1. Xóa lịch sử công của thợ này trước
+    conn.execute("DELETE FROM lich_su_cong WHERE nhan_vien_id = ?", (nv_id,))
+    # 2. Xóa tài khoản đăng nhập liên kết với thợ này (nếu có)
+    conn.execute("DELETE FROM tai_khoan WHERE nhan_vien_id = ?", (nv_id,))
+    # 3. Xóa hồ sơ thợ
+    conn.execute("DELETE FROM nhan_vien WHERE id = ?", (nv_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'message': 'Đã xóa sạch hồ sơ và dữ liệu liên quan của thợ!'})
 if __name__ == '__main__':
     app.run(debug=True)
