@@ -1,50 +1,26 @@
-from flask import Flask, render_template, request, jsonify, session
-import requests, json
-
-app = Flask(__name__)
-app.secret_key = 'noithatnguyenminh_key'
-import os
-# Lấy URL từ biến môi trường sếp vừa tạo trên Render
-GS_URL = os.environ.get("GS_URL")
-
-def call_gs(action, table, **kwargs):
-    try:
-        res = requests.post(GS_URL, data=json.dumps({"action": action, "table": table, **kwargs}), timeout=15)
-        return res.json()
-    except: return []
-
-@app.route('/')
-def index():
-    if 'username' not in session: return render_template('index.html', page='login')
-    return render_template('index.html', page='main', user=session)
-
 @app.route('/api/login', methods=['POST'])
 def api_login():
     data = request.json
     users = call_gs("read", "tai_khoan")
     
-    # Kiểm tra xem users có phải là list không
     if not isinstance(users, list):
-        print(f"DEBUG: Dữ liệu trả về không phải list: {users}")
         return jsonify({'status': 'error', 'message': 'Lỗi kết nối dữ liệu'})
         
     user = None
+    # Sửa logic: Tìm ưu tiên dòng nào có role là 'admin' trước
     for u in users:
-        # So sánh chữ thường để tránh lỗi hoa/thường
         if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
            str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
-            user = u
-            break
+            # Nếu tìm thấy user, kiểm tra role
+            if str(u.get('role', '')).strip().lower() == 'admin':
+                user = u
+                break # Ưu tiên admin thì dừng luôn
+            else:
+                user = u # Nếu là thợ thì lưu lại nhưng chưa dừng (để xem có dòng admin nào khác không)
             
     if user:
         session['username'] = user['username']
-        session['role'] = user['role']
+        session['role'] = user.get('role', 'tho') # Mặc định là thợ nếu không có cột role
         return jsonify({'status': 'success'})
     
     return jsonify({'status': 'error', 'message': 'Sai tài khoản hoặc mật khẩu!'})
-def debug_login():
-    data = request.json
-    users = call_gs("read", "tai_khoan")
-    return jsonify({'dữ_liệu_lấy_được': users, 'sếp_nhập_vào': data})
-if __name__ == '__main__':
-    app.run()
