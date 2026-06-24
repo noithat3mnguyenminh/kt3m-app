@@ -21,24 +21,26 @@ def api_login():
     data = request.json
     users = call_gs("read", "tai_khoan")
     
-    # In ra tất cả danh sách user để sếp kiểm tra trong Logs
-    print(f"Danh sách từ Sheet: {users}") 
-    
-    # So sánh kỹ hơn
+    # Kiểm tra xem users có phải là list không
+    if not isinstance(users, list):
+        print(f"DEBUG: Dữ liệu trả về không phải list: {users}")
+        return jsonify({'status': 'error', 'message': 'Lỗi kết nối dữ liệu'})
+        
     user = None
     for u in users:
-        # Ép tất cả về dạng chữ (str) để so sánh cho chắc chắn
-        if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
-           str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
-            user = u
-            break
+        # Kiểm tra u phải là dictionary
+        if isinstance(u, dict):
+            if str(u.get('username', '')).strip().lower() == str(data.get('username', '')).strip().lower() and \
+               str(u.get('password', '')).strip() == str(data.get('password', '')).strip():
+                user = u
+                break
             
     if user:
         session['username'] = user['username']
         session['role'] = user['role']
         return jsonify({'status': 'success'})
     
-    return jsonify({'status': 'error', 'message': 'Không tìm thấy tài khoản này trong hệ thống!'})
+    return jsonify({'status': 'error', 'message': 'Sai tài khoản hoặc mật khẩu!'})
 def debug_login():
     data = request.json
     users = call_gs("read", "tai_khoan")
